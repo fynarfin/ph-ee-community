@@ -1,4 +1,4 @@
-package org.mifos.connector.ams.pesacore.camel.config;
+package org.mifos.connector.ams.paygops.camel.config;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.spi.RestConfiguration;

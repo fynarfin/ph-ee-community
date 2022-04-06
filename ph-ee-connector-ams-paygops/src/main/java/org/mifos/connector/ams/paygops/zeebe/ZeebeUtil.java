@@ -1,12 +1,10 @@
-package org.mifos.connector.ams.pesacore.zeebe;
+package org.mifos.connector.ams.paygops.zeebe;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ZeebeUtil {

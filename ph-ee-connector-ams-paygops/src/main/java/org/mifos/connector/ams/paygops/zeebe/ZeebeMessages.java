@@ -1,4 +1,4 @@
-package org.mifos.connector.ams.pesacore.zeebe;
+package org.mifos.connector.ams.paygops.zeebe;
 
 public class ZeebeMessages {
 

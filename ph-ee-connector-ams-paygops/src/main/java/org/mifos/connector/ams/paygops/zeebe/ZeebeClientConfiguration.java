@@ -1,4 +1,4 @@
-package org.mifos.connector.ams.pesacore.zeebe;
+package org.mifos.connector.ams.paygops.zeebe;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import org.springframework.beans.factory.annotation.Value;

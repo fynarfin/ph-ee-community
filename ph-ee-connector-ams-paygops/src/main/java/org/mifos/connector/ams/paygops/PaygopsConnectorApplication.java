@@ -1,4 +1,4 @@
-package org.mifos.connector.ams.pesacore;
+package org.mifos.connector.ams.paygops;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class PesacoreConnectorApplication {
+public class PaygopsConnectorApplication {
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -24,7 +24,7 @@ public class PesacoreConnectorApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(PesacoreConnectorApplication.class, args);
+        SpringApplication.run(PaygopsConnectorApplication.class, args);
     }
 
 }

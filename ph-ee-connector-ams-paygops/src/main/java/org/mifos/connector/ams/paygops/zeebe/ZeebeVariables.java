@@ -1,4 +1,4 @@
-package org.mifos.connector.ams.pesacore.zeebe;
+package org.mifos.connector.ams.paygops.zeebe;
 
 public class ZeebeVariables {
 
@@ -9,4 +9,5 @@ public class ZeebeVariables {
     public static final String PARTY_LOOKUP_FAILED = "partyLookupFailed";
     public static final String TRANSFER_SETTLEMENT_FAILED = "transferSettlementFailed";
     public static final String SERVER_TRANSACTION_ID = "mpesaTransactionId";
+    public static final String AMS_REQUEST = "amsRequest";
 }

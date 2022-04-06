@@ -1,4 +1,4 @@
-package org.mifos.connector.ams.pesacore.zeebe;
+package org.mifos.connector.ams.paygops.zeebe;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.camunda.zeebe.client.ZeebeClient;
@@ -16,8 +16,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import static org.mifos.connector.ams.pesacore.camel.config.CamelProperties.CHANNEL_REQUEST;
-import static org.mifos.connector.ams.pesacore.zeebe.ZeebeVariables.*;
+
+import static org.mifos.connector.ams.paygops.camel.config.CamelProperties.AMS_REQUEST;
+import static org.mifos.connector.ams.paygops.camel.config.CamelProperties.CHANNEL_REQUEST;
+import static org.mifos.connector.ams.paygops.zeebe.ZeebeVariables.*;
 
 @Component
 public class ZeebeWorkers {
@@ -47,7 +49,7 @@ public class ZeebeWorkers {
     public void setupWorkers() {
 
         zeebeClient.newWorker()
-                .jobType("transfer-validation")
+                .jobType("transfer-validation-paygops")
                 .handler((client, job) -> {
                     logWorkerDetails(job);
 
@@ -76,7 +78,7 @@ public class ZeebeWorkers {
                             .variables(variables)
                             .send();
                 })
-                .name("transfer-validation")
+                .name("transfer-validation-paygops")
                 .maxJobsActive(workerMaxJobs)
                 .open();
 
@@ -99,8 +101,8 @@ public class ZeebeWorkers {
                         ex.setProperty(TRANSACTION_ID, transactionId);
 
                         producerTemplate.send("direct:transfer-settlement", ex);
-
                         boolean isSettlementFailed = ex.getProperty(TRANSFER_SETTLEMENT_FAILED, boolean.class);
+                        variables.put(ZeebeVariables.AMS_REQUEST,ex.getProperty(AMS_REQUEST));
                         variables.put(TRANSFER_SETTLEMENT_FAILED, isSettlementFailed);
                     } else {
                         variables = new HashMap<>();

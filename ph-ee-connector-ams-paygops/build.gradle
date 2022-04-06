@@ -38,7 +38,7 @@ dependencies {
 
 group = 'org.mifos'
 version = '0.0.1-SNAPSHOT'
-description = 'ph-ee-connector-ams-pesacore'
+description = 'ph-ee-connector-ams-paygops'
 sourceCompatibility = '1.8'
 
 publishing {

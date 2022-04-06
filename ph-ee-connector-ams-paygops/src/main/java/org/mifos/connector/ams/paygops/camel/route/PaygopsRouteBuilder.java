@@ -1,40 +1,46 @@
-package org.mifos.connector.ams.pesacore.camel.route;
+package org.mifos.connector.ams.paygops.camel.route;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.json.JSONObject;
-import org.mifos.connector.ams.pesacore.pesacore.dto.PesacoreRequestDTO;
+import org.mifos.connector.ams.paygops.paygopsDTO.PaygopsRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import static org.mifos.connector.ams.pesacore.camel.config.CamelProperties.CHANNEL_REQUEST;
-import static org.mifos.connector.ams.pesacore.zeebe.ZeebeVariables.*;
+
+import static org.mifos.connector.ams.paygops.camel.config.CamelProperties.*;
+import static org.mifos.connector.ams.paygops.camel.config.CamelProperties.AMS_REQUEST;
+import static org.mifos.connector.ams.paygops.zeebe.ZeebeVariables.*;
 
 @Component
-public class PesaRouteBuilder extends RouteBuilder {
+public class PaygopsRouteBuilder extends RouteBuilder {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${pesacore.base-url}")
-    private String pesacoreBaseUrl;
+    @Value("${paygops.base-url}")
+    private String paygopsBaseUrl;
 
-    @Value("${pesacore.endpoint.verification}")
+    @Value("${paygops.endpoint.verification}")
     private String verificationEndpoint;
 
-    @Value("${pesacore.endpoint.confirmation}")
+    @Value("${paygops.endpoint.confirmation}")
     private String confirmationEndpoint;
+
+    @Value("${paygops.auth-header}")
+    private String accessToken;
 
 
     @Override
     public void configure() {
 
-        from("rest:POST:/api/paymentHub/Verification")
+        from("rest:POST:/api/v1/payments/validate")
                 .process(exchange -> {
                     JSONObject channelRequest = new JSONObject(exchange.getIn().getBody(String.class));
                     String transactionId = "123";
+                    log.info(channelRequest.toString());
                     exchange.setProperty(CHANNEL_REQUEST, channelRequest);
                     exchange.setProperty(TRANSACTION_ID, transactionId);
                 })
@@ -51,33 +57,40 @@ public class PesaRouteBuilder extends RouteBuilder {
 
         from("direct:transfer-validation-base")
                 .id("transfer-validation-base")
-                .log(LoggingLevel.INFO, "## Starting transfer Validation base route")
+                .log(LoggingLevel.INFO, "## Starting Paygops Validation base route")
                 .to("direct:transfer-validation")
                 .choice()
                 .when(header("CamelHttpResponseCode").isEqualTo("200"))
-                .log(LoggingLevel.INFO, "Validation successful")
+                .log(LoggingLevel.INFO, "Paygops Validation successful")
                 .process(exchange -> {
                     // processing success case
                     exchange.setProperty(PARTY_LOOKUP_FAILED, false);
                 })
                 .otherwise()
-                .log(LoggingLevel.ERROR, "Validation unsuccessful")
+                .log(LoggingLevel.ERROR, "Paygops Validation unsuccessful")
                 .process(exchange -> {
                     // processing unsuccessful case
+                    String body = exchange.getIn().getBody(String.class);
+                    JSONObject jsonObject = new JSONObject(body);
+                    String errorCode = jsonObject.getString("error");
+                    String errorDescription = jsonObject.getString("error_message");
+                    exchange.setProperty(ERROR_CODE, errorCode);
+                    exchange.setProperty(ERROR_INFORMATION, jsonObject.toString(1));
+                    exchange.setProperty(ERROR_DESCRIPTION, errorDescription);
                     exchange.setProperty(PARTY_LOOKUP_FAILED, true);
                 });
 
         from("direct:transfer-validation")
                 .id("transfer-validation")
-                .log(LoggingLevel.INFO, "## Starting transfer Validation route")
+                .log(LoggingLevel.INFO, "## Starting Paygops Validation route")
                 .removeHeader("*")
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
+                .setHeader("Authorization", simple("Bearer "+ accessToken))
                 .setHeader("Content-Type", constant("application/json"))
                 .setBody(exchange -> {
                     JSONObject channelRequest = (JSONObject) exchange.getProperty(CHANNEL_REQUEST);
                     String transactionId = exchange.getProperty(TRANSACTION_ID, String.class);
-
-                    PesacoreRequestDTO verificationRequestDTO = getPesacoreDtoFromChannelRequest(channelRequest,
+                    PaygopsRequestDTO verificationRequestDTO = getPaygopsDtoFromChannelRequest(channelRequest,
                             transactionId);
 
                     logger.info("Validation request DTO: \n\n\n" + verificationRequestDTO);
@@ -85,7 +98,7 @@ public class PesaRouteBuilder extends RouteBuilder {
                 })
                 .marshal().json(JsonLibrary.Jackson)
                 .toD(getVerificationEndpoint() + "?bridgeEndpoint=true&throwExceptionOnFailure=false")
-                .log(LoggingLevel.INFO, "Pesacore verification api response: \n\n..\n\n..\n\n.. ${body}");
+                .log(LoggingLevel.INFO, "Paygops verification api response: \n\n..\n\n..\n\n.. ${body}");
 
         from("direct:transfer-settlement-base")
                 .id("transfer-settlement-base")
@@ -96,19 +109,23 @@ public class PesaRouteBuilder extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Settlement successful")
                 .process(exchange -> {
                     // processing success case
-
-                    JSONObject body = new JSONObject(exchange.getIn().getBody(String.class));
-
-                    if(body.getString("status").equals("CONFIRMED")) {
+                    String body = exchange.getIn().getBody(String.class);
+                    JSONObject jsonObject = new JSONObject(body);
+                    logger.info(jsonObject.toString());
                         exchange.setProperty(TRANSFER_SETTLEMENT_FAILED, false);
-                    } else {
-                        exchange.setProperty(TRANSFER_SETTLEMENT_FAILED, true);
-                    }
+
                 })
                 .otherwise()
                 .log(LoggingLevel.ERROR, "Settlement unsuccessful")
                 .process(exchange -> {
                     // processing unsuccessful case
+                    String body = exchange.getIn().getBody(String.class);
+                    JSONObject jsonObject = new JSONObject(body);
+                    String errorCode = jsonObject.getString("error");
+                    String errorDescription = jsonObject.getString("error_message");
+                    exchange.setProperty(ERROR_CODE, errorCode);
+                    exchange.setProperty(ERROR_INFORMATION, jsonObject.toString(1));
+                    exchange.setProperty(ERROR_DESCRIPTION, errorDescription);
                     exchange.setProperty(TRANSFER_SETTLEMENT_FAILED, true);
                 });
 
@@ -118,52 +135,59 @@ public class PesaRouteBuilder extends RouteBuilder {
                 .log(LoggingLevel.INFO, "## Starting transfer settlement route")
                 .removeHeader("*")
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
+                .setHeader("Authorization", simple("Bearer "+ accessToken))
                 .setHeader("Content-Type", constant("application/json"))
                 .setBody(exchange -> {
 
                     JSONObject channelRequest = (JSONObject) exchange.getProperty(CHANNEL_REQUEST);
                     String transactionId = exchange.getProperty(TRANSACTION_ID, String.class);
 
-                    PesacoreRequestDTO confirmationRequestDTO = getPesacoreDtoFromChannelRequest(channelRequest,
+                    PaygopsRequestDTO confirmationRequestDTO = getPaygopsDtoFromChannelRequest(channelRequest,
                             transactionId);
-                    confirmationRequestDTO.setStatus("successful");
 
                     logger.info("Confirmation request DTO: \n\n\n" + confirmationRequestDTO);
+                    exchange.setProperty(AMS_REQUEST,confirmationRequestDTO.toString());
                     return confirmationRequestDTO;
                 })
                 .marshal().json(JsonLibrary.Jackson)
                 .toD(getConfirmationEndpoint() + "?bridgeEndpoint=true&throwExceptionOnFailure=false")
-                .log(LoggingLevel.INFO, "Pesacore verification api response: \n\n..\n\n..\n\n.. ${body}");
+                .log(LoggingLevel.INFO, "Paygops verification api response: \n ${body}");
 
     }
 
     // returns the complete URL for verification request
     private String getVerificationEndpoint() {
-        return pesacoreBaseUrl + verificationEndpoint;
+        return paygopsBaseUrl + verificationEndpoint;
     }
 
     // returns the complete URL for confirmation request
     private String getConfirmationEndpoint() {
-        return pesacoreBaseUrl + confirmationEndpoint;
+        return paygopsBaseUrl + confirmationEndpoint;
     }
 
-    private PesacoreRequestDTO getPesacoreDtoFromChannelRequest(JSONObject channelRequest, String transactionId) {
-        PesacoreRequestDTO verificationRequestDTO = new PesacoreRequestDTO();
+    private PaygopsRequestDTO getPaygopsDtoFromChannelRequest(JSONObject channelRequest, String transactionId) {
+        PaygopsRequestDTO verificationRequestDTO = new PaygopsRequestDTO();
 
         String phoneNumber = channelRequest.getJSONObject("payer")
                 .getJSONObject("partyIdInfo").getString("partyIdentifier");
-        String accountId = channelRequest.getJSONObject("payee")
-                .getJSONObject("partyIdInfo").getString("partyIdentifier");
+        String memoId = channelRequest.getJSONObject("payee")
+                .getJSONObject("partyIdInfo").getString("partyIdentifier"); // instead of account id this value corresponds to national id
         JSONObject amountJson = channelRequest.getJSONObject("amount");
+        String operatorName = "MPESA";
+
 
         Long amount = amountJson.getLong("amount");
         String currency = amountJson.getString("currency");
+        String country = "KE";
 
-        verificationRequestDTO.setRemoteTransactionId(transactionId);
+        verificationRequestDTO.setTransactionId(transactionId);
         verificationRequestDTO.setAmount(amount);
         verificationRequestDTO.setPhoneNumber(phoneNumber);
         verificationRequestDTO.setCurrency(currency);
-        verificationRequestDTO.setAccount(accountId);
+        verificationRequestDTO.setOperator(operatorName);
+        verificationRequestDTO.setMemo(memoId);
+        verificationRequestDTO.setCountry(country);
+        verificationRequestDTO.setWalletName(phoneNumber);
 
         return verificationRequestDTO;
     }
