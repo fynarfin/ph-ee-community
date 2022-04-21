@@ -72,7 +72,7 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                     // processing unsuccessful case
                     String body = exchange.getIn().getBody(String.class);
                     JSONObject jsonObject = new JSONObject(body);
-                    String errorCode = jsonObject.getString("error");
+                    Integer errorCode = jsonObject.getInt("error");
                     String errorDescription = jsonObject.getString("error_message");
                     exchange.setProperty(ERROR_CODE, errorCode);
                     exchange.setProperty(ERROR_INFORMATION, jsonObject.toString(1));
@@ -83,6 +83,7 @@ public class PaygopsRouteBuilder extends RouteBuilder {
         from("direct:transfer-validation")
                 .id("transfer-validation")
                 .log(LoggingLevel.INFO, "## Starting Paygops Validation route")
+                .log(LoggingLevel.INFO, "Bearer token is - " + accessToken)
                 .removeHeader("*")
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
                 .setHeader("Authorization", simple("Bearer "+ accessToken))
@@ -121,7 +122,7 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                     // processing unsuccessful case
                     String body = exchange.getIn().getBody(String.class);
                     JSONObject jsonObject = new JSONObject(body);
-                    String errorCode = jsonObject.getString("error");
+                    Integer errorCode = jsonObject.getInt("error");
                     String errorDescription = jsonObject.getString("error_message");
                     exchange.setProperty(ERROR_CODE, errorCode);
                     exchange.setProperty(ERROR_INFORMATION, jsonObject.toString(1));
