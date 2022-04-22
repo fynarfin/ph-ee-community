@@ -61,7 +61,7 @@ public class ZeebeWorkers {
 
                         JSONObject channelRequest = new JSONObject((String) variables.get("channelRequest"));
                         String transactionId = (String) variables.get(TRANSACTION_ID);
-
+                        logger.info("Channel Request :" + ex.getProperty(CHANNEL_REQUEST));
                         ex.setProperty(CHANNEL_REQUEST, channelRequest);
                         ex.setProperty(TRANSACTION_ID, transactionId);
 
@@ -83,7 +83,7 @@ public class ZeebeWorkers {
                 .open();
 
         zeebeClient.newWorker()
-                .jobType("transfer-settlement")
+                .jobType("transfer-settlement-paygops")
                 .handler((client, job) -> {
                     logWorkerDetails(job);
 
@@ -93,11 +93,11 @@ public class ZeebeWorkers {
                         // Do stuff here
                         variables = job.getVariablesAsMap();
 
-                        JSONObject channelRequest = objectMapper.readValue(
-                                (String) variables.get("channelRequest"), JSONObject.class);
+                        JSONObject channelRequest = new JSONObject((String) variables.get("channelRequest"));
                         String transactionId = (String) variables.get(TRANSACTION_ID);
 
                         ex.setProperty(CHANNEL_REQUEST, channelRequest);
+                        logger.info("Channel Request :" + ex.getProperty(CHANNEL_REQUEST));
                         ex.setProperty(TRANSACTION_ID, transactionId);
 
                         producerTemplate.send("direct:transfer-settlement", ex);
@@ -113,7 +113,7 @@ public class ZeebeWorkers {
                             .variables(variables)
                             .send();
                 })
-                .name("transfer-settlement")
+                .name("transfer-settlement-paygops")
                 .maxJobsActive(workerMaxJobs)
                 .open();
 
