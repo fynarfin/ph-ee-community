@@ -1,11 +1,13 @@
 package org.mifos.connector.ams.paygops.camel.route;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.json.JSONObject;
 import org.mifos.connector.ams.paygops.paygopsDTO.PaygopsRequestDTO;
+import org.mifos.connector.ams.paygops.paygopsDTO.PaygopsResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,10 +63,23 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                 .to("direct:transfer-validation")
                 .choice()
                 .when(header("CamelHttpResponseCode").isEqualTo("200"))
-                .log(LoggingLevel.INFO, "Paygops Validation successful")
+                .log(LoggingLevel.INFO, "Paygops Validation Response Received")
                 .process(exchange -> {
                     // processing success case
-                    exchange.setProperty(PARTY_LOOKUP_FAILED, false);
+                    String body = exchange.getIn().getBody(String.class);
+                    ObjectMapper mapper = new ObjectMapper();
+                    PaygopsResponseDto result = mapper.readValue(body, PaygopsResponseDto.class);
+                    logger.info("body : "+ result);
+                    //JSONObject jsonObject = new JSONObject(body);
+                    if (result.getReconciled()){
+                            logger.info("Paygops Validation Successful");
+                            exchange.setProperty(PARTY_LOOKUP_FAILED, false);
+                        }
+                        else {
+                        logger.info("Paygops Validation Unsuccessful, Reconciled field returned false");
+                        exchange.setProperty(PARTY_LOOKUP_FAILED, true);
+                    }
+
                 })
                 .otherwise()
                 .log(LoggingLevel.ERROR, "Paygops Validation unsuccessful")
@@ -90,8 +105,9 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                 .setHeader("Content-Type", constant("application/json"))
                 .setBody(exchange -> {
                     JSONObject channelRequest = (JSONObject) exchange.getProperty(CHANNEL_REQUEST);
-                    logger.info(exchange.getProperty(CHANNEL_REQUEST).toString());
                     String transactionId = exchange.getProperty(TRANSACTION_ID, String.class);
+                    logger.info(exchange.getProperty(CHANNEL_REQUEST).toString());
+
                     PaygopsRequestDTO verificationRequestDTO = getPaygopsDtoFromChannelRequest(channelRequest,
                             transactionId);
 
@@ -100,7 +116,7 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                 })
                 .marshal().json(JsonLibrary.Jackson)
                 .toD(getVerificationEndpoint() + "?bridgeEndpoint=true&throwExceptionOnFailure=false")
-                .log(LoggingLevel.INFO, "Paygops verification api response: \n\n..\n\n..\n\n.. ${body}");
+                .log(LoggingLevel.INFO, "Paygops validation api response: \n\n..\n\n..\n\n.. ${body}");
 
         from("direct:transfer-settlement-base")
                 .id("transfer-settlement-base")
@@ -108,14 +124,13 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                 .to("direct:transfer-settlement")
                 .choice()
                 .when(header("CamelHttpResponseCode").isEqualTo("200"))
-                .log(LoggingLevel.INFO, "Settlement successful")
+                .log(LoggingLevel.INFO, "Settlement Response Received")
                 .process(exchange -> {
                     // processing success case
                     String body = exchange.getIn().getBody(String.class);
                     JSONObject jsonObject = new JSONObject(body);
                     logger.info(jsonObject.toString());
-                        exchange.setProperty(TRANSFER_SETTLEMENT_FAILED, false);
-
+                    exchange.setProperty(TRANSFER_SETTLEMENT_FAILED, false);
                 })
                 .otherwise()
                 .log(LoggingLevel.ERROR, "Settlement unsuccessful")
