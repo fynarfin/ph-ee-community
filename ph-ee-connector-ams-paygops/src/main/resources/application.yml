@@ -17,6 +17,7 @@ zeebe:
 ams:
   local:
     enabled: true
+  timeout: 60000
 
 paygops:
   base-url: https://feature-test1.paygops.com/

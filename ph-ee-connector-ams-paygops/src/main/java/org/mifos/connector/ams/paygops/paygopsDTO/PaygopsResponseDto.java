@@ -1,5 +1,7 @@
 package org.mifos.connector.ams.paygops.paygopsDTO;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PaygopsResponseDto {
 
     /*"transaction_id": "simon_nationalID_test2",
@@ -17,20 +19,61 @@ public class PaygopsResponseDto {
     "destination": "C391270014"
     */
 
-    private String transaction_id;
-    private String amount;
-    private String sender_name;
-    private String sender_phone_number;
-    private String sent_datetime;
-    private String memo;
-    private String wallet_operator;
-    private String country;
-    private String currency;
-    private String [] warnings = new String[1];
-    private Boolean reconciled;
-    private String destination_type;
-    private String destination;
+    PaygopsResponseDto(){
 
+    }
+    @JsonProperty("transaction_id")
+    private String transaction_id;
+
+    @JsonProperty("amount")
+    private String amount;
+
+    @JsonProperty("sender_name")
+    private String sender_name;
+
+    @JsonProperty("sender_phone_number")
+    private String sender_phone_number;
+
+    @JsonProperty("sent_datetime")
+    private String sent_datetime;
+
+    @JsonProperty("memo")
+    private String memo;
+
+    @JsonProperty("wallet_operator")
+    private String wallet_operator;
+
+    @JsonProperty("country")
+    private String country;
+
+    @JsonProperty("currency")
+    private String currency;
+
+    @JsonProperty("warnings")
+    private String [] warnings = new String[1];
+
+    @JsonProperty("reconciled")
+    private Boolean reconciled;
+
+    @JsonProperty("destination_type")
+    private String destination_type;
+
+    @JsonProperty("destinations")
+    private String [] destinations = new String[1];
+
+    @Override
+    public String toString() {
+        return "PaygopsRequestDTO{" +
+                "transactionId='" + transaction_id + '\'' +
+                ", amount='" + amount + '\'' +
+                ", sender phone number=" + sender_phone_number +
+                ", memo='" + memo + '\'' +
+                ", wallet operator=" + wallet_operator +
+                ", country=" + country +
+                ", currency=" + currency +
+                ", reconciled field=" + reconciled +
+                '}';
+    }
 
     public String getTransaction_id() {
         return transaction_id;
@@ -128,11 +171,11 @@ public class PaygopsResponseDto {
         this.destination_type = destination_type;
     }
 
-    public String getDestination() {
-        return destination;
+    public String[] getDestinations() {
+        return destinations;
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
+    public void setDestination(String[] destinations) {
+        this.destinations = destinations;
     }
 }
