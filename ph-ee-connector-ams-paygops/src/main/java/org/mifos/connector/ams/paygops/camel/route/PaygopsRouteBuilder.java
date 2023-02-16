@@ -91,6 +91,7 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                             exchange.setProperty(PARTY_LOOKUP_FAILED, false);
                             exchange.setProperty("accountStatus",accountStatus.ACTIVE.toString());
                             exchange.setProperty("subStatus", "");
+                            exchange.setProperty("dfspId", exchange.getProperty("dfspId"));
                         } else {
                             setErrorCamelInfo(exchange,"Validation Unsuccessful: Reconciled field returned false",
                                     ErrorCodeEnum.RECONCILIATION.getCode(), result.toString());
@@ -147,6 +148,8 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                         String transactionId = paygopsRequestDTO.getTransactionId();
                         log.info(paygopsRequestDTO.toString());
                         exchange.setProperty(TRANSACTION_ID, transactionId);
+                        exchange.setProperty("dfspId", exchange.getProperty("dfspId"));
+                        logger.info("DFSP Id:{}",exchange.getProperty("dfspId"));
                         logger.info("Validation request DTO: \n\n\n" + paygopsRequestDTO);
                         return paygopsRequestDTO;
                     }
@@ -207,6 +210,8 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                 .log(LoggingLevel.INFO, "## Paygops user validation")
                 .setBody(e -> {
                     String body=e.getIn().getBody(String.class);
+                    logger.debug("Dfsp Id : {}",e.getProperty("dfspId"));
+                    e.setProperty("dfspId",e.getProperty("dfspId"));
                     logger.debug("Body : {}",body);
                     return body;
                 })
@@ -220,6 +225,7 @@ public class PaygopsRouteBuilder extends RouteBuilder {
                     responseObject.put("reconciled", e.getProperty(PARTY_LOOKUP_FAILED).equals(false));
                     responseObject.put("AMS", "paygops");
                     responseObject.put("transaction_id", transactionId);
+                    responseObject.put("dfspId", e.getProperty("dfspId"));
                     logger.debug("response object :{}",responseObject);
                     e.getIn().setBody(responseObject.toString());
                 });
