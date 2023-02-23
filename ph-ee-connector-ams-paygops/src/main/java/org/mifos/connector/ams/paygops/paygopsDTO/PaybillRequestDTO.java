@@ -2,6 +2,7 @@ package org.mifos.connector.ams.paygops.paygopsDTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jdk.nashorn.internal.objects.annotations.Property;
+import lombok.*;
 
 import java.util.List;
 
@@ -33,6 +34,11 @@ import java.util.List;
 //        }
 //    ]
 //}
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaybillRequestDTO {
     @JsonProperty("wallet_name")
     private String wallet_name;
@@ -49,57 +55,4 @@ public class PaybillRequestDTO {
 
     @JsonProperty("customData")
     private List<JsonElement> customData;
-
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
-
-    public void setWallet_name(String wallet_name) {
-        this.wallet_name = wallet_name;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-
-    public String getMemo() {
-        return memo;
-    }
-
-    public String getWallet_name() {
-        return wallet_name;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public JsonElement getPrimaryIdentifier() {
-        return primaryIdentifier;
-    }
-
-    public void setPrimaryIdentifier(JsonElement primaryIdentifier) {
-        this.primaryIdentifier = primaryIdentifier;
-    }
-
-    public JsonElement getSecondaryIdentifier() {
-        return secondaryIdentifier;
-    }
-
-    public void setSecondaryIdentifier(JsonElement secondaryIdentifier) {
-        this.secondaryIdentifier = secondaryIdentifier;
-    }
-
-    public List<JsonElement> getCustomData() {
-        return customData;
-    }
-
-    public void setCustomData(List<JsonElement> customData) {
-        this.customData = customData;
-    }
-
-    public String getSecondaryIdentierValue() {
-        return secondaryIdentifier.getValue();
-    }
 }

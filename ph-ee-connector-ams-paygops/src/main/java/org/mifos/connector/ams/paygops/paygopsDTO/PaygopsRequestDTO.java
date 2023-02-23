@@ -1,6 +1,10 @@
 package org.mifos.connector.ams.paygops.paygopsDTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  {
@@ -16,6 +20,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
  }
  */
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaygopsRequestDTO {
 
     @JsonProperty("transaction_id")
@@ -42,9 +50,6 @@ public class PaygopsRequestDTO {
     @JsonProperty("currency")
     private String currency;
 
-    public PaygopsRequestDTO() {
-    }
-
     @Override
     public String toString() {
         return "PaygopsRequestDTO{" +
@@ -57,57 +62,5 @@ public class PaygopsRequestDTO {
                 ", country='" + country + '\'' +
                 ", currency='" + currency + '\'' +
                 '}';
-    }
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
-
-    public void setAmount(Long amount) {
-        this.amount = amount;
-    }
-
-    public String getWalletName() {
-        return walletName;
-    }
-
-    public void setWalletName(String walletName) {
-        this.walletName = walletName;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
-
-    public String getOperator() {
-        return operator;
-    }
-
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
     }
 }
