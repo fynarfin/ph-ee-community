@@ -13,13 +13,15 @@ public class PayloadUtils {
         String memo = convertCustomData(payload.getJSONArray("customData"), "memo");
         String wallet_name = convertCustomData(payload.getJSONArray("customData"), "wallet_name");
         String wallet_msisdn=payload.getJSONObject("secondaryIdentifier").getString("value");
+        String amount=convertCustomData(payload.getJSONArray("customData"),"amount").trim();
+
         PaygopsRequestDTO validationRequestDTO = new PaygopsRequestDTO();
         validationRequestDTO.setPhoneNumber(wallet_msisdn);
         validationRequestDTO.setTransactionId(transactionId);
         validationRequestDTO.setCurrency(currency);
         validationRequestDTO.setMemo(memo);
         validationRequestDTO.setWalletName(wallet_name);
-        validationRequestDTO.setAmount(1L);
+        validationRequestDTO.setAmount(Long.valueOf(amount));
         return validationRequestDTO;
     }
     public static String convertCustomData(JSONArray customData, String key)
