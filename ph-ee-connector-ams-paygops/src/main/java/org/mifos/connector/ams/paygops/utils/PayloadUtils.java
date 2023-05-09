@@ -14,6 +14,7 @@ public class PayloadUtils {
         String wallet_name = convertCustomData(payload.getJSONArray("customData"), "wallet_name");
         String wallet_msisdn=payload.getJSONObject("secondaryIdentifier").getString("value");
         String amount=convertCustomData(payload.getJSONArray("customData"),"amount").trim();
+        Long amountLong = Double.valueOf(amount).longValue();
 
         PaygopsRequestDTO validationRequestDTO = new PaygopsRequestDTO();
         validationRequestDTO.setPhoneNumber(wallet_msisdn);
@@ -21,7 +22,7 @@ public class PayloadUtils {
         validationRequestDTO.setCurrency(currency);
         validationRequestDTO.setMemo(memo);
         validationRequestDTO.setWalletName(wallet_name);
-        validationRequestDTO.setAmount(Long.valueOf(amount));
+        validationRequestDTO.setAmount(amountLong);
         return validationRequestDTO;
     }
     public static String convertCustomData(JSONArray customData, String key)
