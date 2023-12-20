@@ -20,18 +20,6 @@ public class Bill {
     private String dueDate;
     private String amountonDueDate;
 
-    @Override
-    public String toString() {
-        return "Bill{" +
-                "billerId='" + billerId + '\'' +
-                ", billerName='" + billerName + '\'' +
-                ", billStatus='" + billStatus + '\'' +
-                ", dueDate='" + dueDate + '\'' +
-                ", amountonDueDate='" + amountonDueDate + '\'' +
-                ", amountAfterDueDate='" + amountAfterDueDate + '\'' +
-                '}';
-    }
-
     private String amountAfterDueDate;
 
 
@@ -84,5 +72,15 @@ public class Bill {
         this.amountAfterDueDate = amountAfterDueDate;
     }
 
-
+    @Override
+    public String toString() {
+        return "Bill{" +
+                "billerId='" + billerId + '\'' +
+                ", billerName='" + billerName + '\'' +
+                ", billStatus='" + billStatus + '\'' +
+                ", dueDate='" + dueDate + '\'' +
+                ", amountonDueDate='" + amountonDueDate + '\'' +
+                ", amountAfterDueDate='" + amountAfterDueDate + '\'' +
+                '}';
+    }
 }

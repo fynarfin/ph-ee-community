@@ -92,7 +92,7 @@ public class ZeebeWorkers {
                     headers,null);
             exchange.setProperty(BILLER_DETAILS, variables.get(BILLER_DETAILS).toString());
             exchange.setProperty(CALLBACK_URL, variables.get(CALLBACK_URL).toString());
-            exchange.setProperty(BILL_INQUIRY_RESPONSE, variables.get(BILL_INQUIRY_RESPONSE).toString());
+            exchange.setProperty(BILL_INQUIRY_RESPONSE, variables.get(BILL_INQUIRY_RESPONSE));
             producerTemplate.send("direct:bill-inquiry-response", exchange);
             variables.put(BILL_PAY_RESPONSE, exchange.getIn().getBody(String.class));
             variables.put(BILL_PAY_FAILED,exchange.getProperty(BILL_PAY_FAILED));

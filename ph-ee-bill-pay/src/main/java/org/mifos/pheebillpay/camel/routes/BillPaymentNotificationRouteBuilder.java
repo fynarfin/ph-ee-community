@@ -39,8 +39,10 @@ public class BillPaymentNotificationRouteBuilder extends ErrorHandlerRouteBuilde
                     exchange.getIn().setHeader(PLATFORM_TENANT,exchange.getIn().getHeader(PLATFORM_TENANT));
                     exchange.getIn().setHeader(CLIENTCORRELATIONID,exchange.getIn().getHeader(CLIENTCORRELATIONID));
                     exchange.getIn().setHeader(PAYER_FSP,exchange.getIn().getHeader(PAYER_FSP));
-                    exchange.getIn().setHeader(CALLBACK_URL,"https://webhook.site/2e4aa0de-4b8b-416f-a375-7085c0ec645e");
-                    exchange.getIn().setBody(responseDTO.toString());
+                    exchange.getIn().setHeader(CALLBACK_URL,exchange.getProperty(CALLBACK_URL));
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonString = objectMapper.writeValueAsString(responseDTO);
+                    exchange.getIn().setBody(jsonString);
                 })
                 .log("Payment Notification Body: ${body}")
                 .log("Payment Notification Headers: ${headers}")

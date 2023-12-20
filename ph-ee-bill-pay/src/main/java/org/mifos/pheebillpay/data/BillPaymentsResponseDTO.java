@@ -49,17 +49,6 @@ public class BillPaymentsResponseDTO implements Serializable {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "BillPaymentsResponseDTO{" +
-                "code='" + code + '\'' +
-                ", reason='" + reason + '\'' +
-                ", requestID='" + requestID + '\'' +
-                ", billId='" + billId + '\'' +
-                ", status='" + status + '\'' +
-                '}';
-    }
-
 
     public String getCode() {
         return code;
@@ -84,6 +73,17 @@ public class BillPaymentsResponseDTO implements Serializable {
 
     public void setBillId(String billId) {
         this.billId = billId;
+    }
+
+    @Override
+    public String toString() {
+        return "BillPaymentsResponseDTO{" +
+                "code='" + code + '\'' +
+                ", reason='" + reason + '\'' +
+                ", requestID='" + requestID + '\'' +
+                ", billId='" + billId + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 
 
