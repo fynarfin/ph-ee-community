@@ -1,6 +1,6 @@
 package org.mifos.pheeBillPay.utils;
 
-public enum BillPayrEnum {
+public enum BillPayEnum {
     SUCCESS_RESPONSE_CODE("00"),
     FAILED_RESPONSE_CODE("01"),
     SUCCESS_RESPONSE_MESSAGE("Request successfully received by Pay-BB"),
@@ -9,7 +9,7 @@ public enum BillPayrEnum {
     private final String value;
 
 
-    BillPayrEnum(String value) {
+    BillPayEnum(String value) {
         this.value = value;
     }
 

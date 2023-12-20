@@ -27,6 +27,16 @@ public class ZeebeVariables {
     public static final String BILL_REQ_ID= "billRequestId";
     public static final String BILL_PAYMENTS_REQ="billPaymentsReq";
     public static final String PAYMENTS_REF_ID="paymentReferenceId";
+    public static final String FIELDS = "fields";
+    public static final String BILLER_TYPE = "billerType";
+    public static final String BILLER_ACCOUNT = "billerAccount";
+    public static final String BILLER_FETCH_FAILED = "billerFetchFailed";
+    public static final String BILLER_DETAILS = "billerDetails";
+    public static final String BILL_INQUIRY_RESPONSE = "billInquiryResponse";
 
-
+    public static final String BILL_FETCH_FAILED = "billFetchFailed";
+    public static final String BILL_PAY_RESPONSE = "billPayResponse";
+    public static final String BILL_PAY_FAILED = "billPayFailed";
+    public static final String PAYER_FSP = "X-PayerFSP-Id";
+    public static final String PLATFORM_TENANT = "Platform-TenantId";
 }

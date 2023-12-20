@@ -1,6 +1,49 @@
 package org.mifos.pheeBillPay.data;
 
+import lombok.AllArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.stereotype.Component;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Component
 public class Bill {
+
+    private String billerId;
+    private String billerName;
+    private String billStatus;
+    private String dueDate;
+    private String amountonDueDate;
+
+    @Override
+    public String toString() {
+        return "Bill{" +
+                "billerId='" + billerId + '\'' +
+                ", billerName='" + billerName + '\'' +
+                ", billStatus='" + billStatus + '\'' +
+                ", dueDate='" + dueDate + '\'' +
+                ", amountonDueDate='" + amountonDueDate + '\'' +
+                ", amountAfterDueDate='" + amountAfterDueDate + '\'' +
+                '}';
+    }
+
+    private String amountAfterDueDate;
+
+
+
+    public String getBillerId() {
+        return billerId;
+    }
+
+    public void setBillerId(String billerId) {
+        this.billerId = billerId;
+    }
+
     public String getBillerName() {
         return billerName;
     }
@@ -9,19 +52,37 @@ public class Bill {
         this.billerName = billerName;
     }
 
-    public double getAmount() {
-        return amount;
+    public String getBillStatus() {
+        return billStatus;
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
+    public void setBillStatus(String billStatus) {
+        this.billStatus = billStatus;
     }
 
-    public Bill(String billerName, double amount) {
-        this.billerName = billerName;
-        this.amount = amount;
+    public String getDueDate() {
+        return dueDate;
     }
 
-    private String billerName;
-    private double amount;
+    public void setDueDate(String dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public String getAmountonDueDate() {
+        return amountonDueDate;
+    }
+
+    public void setAmountonDueDate(String amountonDueDate) {
+        this.amountonDueDate = amountonDueDate;
+    }
+
+    public String getAmountAfterDueDate() {
+        return amountAfterDueDate;
+    }
+
+    public void setAmountAfterDueDate(String amountAfterDueDate) {
+        this.amountAfterDueDate = amountAfterDueDate;
+    }
+
+
 }

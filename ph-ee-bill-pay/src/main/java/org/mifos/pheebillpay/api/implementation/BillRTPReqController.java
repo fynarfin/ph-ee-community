@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.mifos.pheeBillPay.utils.BillPayrEnum.*;
+import static org.mifos.pheeBillPay.utils.BillPayEnum.*;
 
 @RestController
 public class BillRTPReqController implements BillRtpReqApi {
