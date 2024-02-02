@@ -15,3 +15,9 @@ zeebe:
     evenly-allocated-max-jobs: "#{${zeebe.client.max-execution-threads} / ${zeebe.client.number-of-workers}}"
   broker:
     contactpoint: "localhost:26500"
+
+billPay:
+  billAlreadyPaidId : "003"
+  billIdInvalidId : "002"
+  billIdEmptyId : "00"
+  billPayTimeoutId : "005"
