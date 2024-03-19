@@ -59,6 +59,7 @@ public class ZeebeWorkers {
             producerTemplate.send("direct:bill-inquiry", exchange);
             variables.put(BILL_INQUIRY_RESPONSE, exchange.getProperty(BILL_INQUIRY_RESPONSE));
             variables.put(BILL_FETCH_FAILED, exchange.getProperty(BILL_FETCH_FAILED));
+            variables.put(AMOUNT,exchange.getProperty(AMOUNT));
             zeebeClient.newCompleteCommand(job.getKey()).variables(variables).send();
             logger.debug("Zeebe variable {}", job.getVariablesAsMap());
         }).name("fetch-bill").maxJobsActive(workerMaxJobs).open();

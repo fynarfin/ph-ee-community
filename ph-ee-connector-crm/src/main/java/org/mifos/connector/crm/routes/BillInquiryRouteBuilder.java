@@ -61,6 +61,7 @@ public class BillInquiryRouteBuilder extends ErrorHandlerRouteBuilder {
                         exchange.setProperty(BILL_FETCH_FAILED, false);
                     }
                     exchange.setProperty(BILL_INQUIRY_RESPONSE, billInquiryResponseDTO);
+                    exchange.setProperty(AMOUNT,billInquiryResponseDTO.getBillDetails().getAmountonDueDate());
                     ObjectMapper objectMapper = new ObjectMapper();
                     String jsonString = objectMapper.writeValueAsString(billInquiryResponseDTO);
                     exchange.getIn().setBody(jsonString);

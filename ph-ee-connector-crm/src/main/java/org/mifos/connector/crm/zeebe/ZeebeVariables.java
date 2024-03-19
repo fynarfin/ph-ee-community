@@ -36,4 +36,6 @@ public class ZeebeVariables {
     public static final String BILL_PAY_RESPONSE = "billPayResponse";
     public static final String BILL_PAY_FAILED = "billPayFailed";
 
+    public static final String AMOUNT = "amount";
+
 }
