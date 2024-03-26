@@ -81,6 +81,7 @@ public class ZeebeWorkers {
             variables.put("code", exchange.getProperty("code"));
             variables.put("status", exchange.getProperty("status"));
             variables.put("reason", exchange.getProperty("reason"));
+            variables.put("state", "ACCEPTED");
             variables.put(BILL_PAY_FAILED, exchange.getProperty(BILL_PAY_FAILED));
             zeebeClient.newCompleteCommand(job.getKey()).variables(variables).send();
             logger.debug("Zeebe variable {}", job.getVariablesAsMap());
