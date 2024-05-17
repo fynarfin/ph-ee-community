@@ -32,3 +32,7 @@ management:
         enabled: true
       readiness:
         enabled: true
+
+status:
+  billReqAcceptedId: "123"
+  billTimeout: 3

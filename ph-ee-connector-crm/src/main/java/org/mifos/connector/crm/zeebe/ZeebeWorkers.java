@@ -7,6 +7,9 @@ import com.google.gson.Gson;
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -41,6 +44,16 @@ public class ZeebeWorkers {
     @Value("${zeebe.client.evenly-allocated-max-jobs}")
     private int workerMaxJobs;
 
+    @Value("${status.billReqAcceptedId}")
+    private String billReqAcceptedId;
+
+    @Value("${status.billTimeout}")
+    private int billTimeout;
+
+
+    private static final ScheduledExecutorService scheduledThreadPoolExecutor = Executors.newScheduledThreadPool(10);
+
+
     @PostConstruct
     public void setupWorkers() {
 
@@ -69,6 +82,8 @@ public class ZeebeWorkers {
             logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
             logWorkerDetails(job);
             Map<String, Object> variables = job.getVariablesAsMap();
+            if(variables.get(BILL_ID).equals(billReqAcceptedId)){
+                pauseExec();}
             Headers headers = new Headers.HeaderBuilder().addHeader(PLATFORM_TENANT, variables.get(TENANT_ID).toString())
                     .addHeader(CLIENTCORRELATIONID, variables.get(CLIENTCORRELATIONID).toString())
                     .addHeader(PAYER_FSP, variables.get("payerFspId").toString()).build();
@@ -115,6 +130,18 @@ public class ZeebeWorkers {
         }).name("billRTPResp").maxJobsActive(workerMaxJobs).open();
 
     }
+
+    private void pauseExec() {
+            try {
+                logger.info("Pausing execution for capturing intermediary status ");
+                scheduledThreadPoolExecutor.schedule(() -> {
+                }, billTimeout, TimeUnit.SECONDS).get();
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
+        logger.info("Resuming execution post pause");
+    }
+
 
     private void logWorkerDetails(ActivatedJob job) {
         JSONObject jsonJob = new JSONObject();
