@@ -1,6 +1,7 @@
-package org.mifos.pheeBillPay.properties;
+package org.mifos.pheebillpay.properties;
 
 public class BillerDetails {
+
     String id;
     String biller;
     String billerAccount;
@@ -8,12 +9,8 @@ public class BillerDetails {
 
     @Override
     public String toString() {
-        return "BillerDetails{" +
-                "id='" + id + '\'' +
-                ", biller='" + biller + '\'' +
-                ", billerAccount='" + billerAccount + '\'' +
-                ", billerCategory='" + billerCategory + '\'' +
-                '}';
+        return "BillerDetails{" + "id='" + id + '\'' + ", biller='" + biller + '\'' + ", billerAccount='" + billerAccount + '\''
+                + ", billerCategory='" + billerCategory + '\'' + '}';
     }
 
     public String getId() {
@@ -47,6 +44,5 @@ public class BillerDetails {
     public void setBillerCategory(String billerCategory) {
         this.billerCategory = billerCategory;
     }
-
 
 }

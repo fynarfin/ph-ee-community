@@ -1,6 +1,7 @@
-package org.mifos.pheeBillPay.zeebe;
+package org.mifos.pheebillpay.zeebe;
 
-public class ZeebeVariables {
+public final class ZeebeVariables {
+
     private ZeebeVariables() {}
 
     public static final String ACCOUNT = "account";
@@ -16,17 +17,18 @@ public class ZeebeVariables {
     public static final String TRANSACTION_ID = "transactionId";
     public static final String TRANSACTION_TYPE = "transactionType";
     public static final String CLIENTCORRELATIONID = "X-CorrelationID";
-    public static final String PAYER_FSP_ID= "payerFspId";
-    public static final String BILL_ID= "billId";
-    public static final String FIELD= "field";
-    public static final String CALLBACK_URL= "X-CallbackURL";
-    public static final String BILLER_ID= "billerId";
-    public static final String BILLER_NAME= "billerName";
-    public static final String BILLER_CATEGORY= "billerCategory";
-    public static final String BILL_RTP_REQ= "billRTPReqBody";
-    public static final String BILL_REQ_ID= "billRequestId";
-    public static final String BILL_PAYMENTS_REQ="billPaymentsReq";
-    public static final String PAYMENTS_REF_ID="paymentReferenceId";
+    public static final String PAYER_FSP_ID = "payerFspId";
+    public static final String BILL_ID = "billId";
+    public static final String FIELD = "field";
+    public static final String CALLBACK_URL = "X-CallbackURL";
+    public static final String BILLER_ID = "billerId";
+    public static final String BILLER_NAME = "billerName";
+    public static final String BILL_AMOUNT = "billAmount";
+    public static final String BILLER_CATEGORY = "billerCategory";
+    public static final String BILL_RTP_REQ = "billRTPReqBody";
+    public static final String BILL_REQ_ID = "billRequestId";
+    public static final String BILL_PAYMENTS_REQ = "billPaymentsReq";
+    public static final String PAYMENTS_REF_ID = "paymentReferenceId";
     public static final String FIELDS = "fields";
     public static final String BILLER_TYPE = "billerType";
     public static final String BILLER_ACCOUNT = "billerAccount";
@@ -39,4 +41,7 @@ public class ZeebeVariables {
     public static final String BILL_PAY_FAILED = "billPayFailed";
     public static final String PAYER_FSP = "X-PayerFSP-Id";
     public static final String PLATFORM_TENANT = "Platform-TenantId";
+    public static final String PAYER_RTP_REQ = "payerRtpRequest";
+    public static final String RTP_STATUS = "rtpStatus";
+    public static final String RTP_ID = "rtpId";
 }

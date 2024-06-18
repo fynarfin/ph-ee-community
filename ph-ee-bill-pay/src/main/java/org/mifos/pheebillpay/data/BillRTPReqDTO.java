@@ -1,12 +1,13 @@
-package org.mifos.pheeBillPay.data;
+package org.mifos.pheebillpay.data;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.mifos.connector.common.gsma.dto.Bill;
-
-import java.io.Serializable;
 
 @Getter
 @Setter
@@ -14,45 +15,17 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class BillRTPReqDTO implements Serializable {
 
-
     private String clientCorrelationId;
-    private String billId;
+    private String billID;
     private String requestType;
-    private Bill bill;
+    private PayerFSPDetail payerFspDetails;
+    private Alias alias;
+    private Bill billDetails;
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
-    public String getClientCorrelationId() {
-        return clientCorrelationId;
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        additionalProperties.put(name, value);
     }
-
-    public void setClientCorrelationId(String clientCorrelationId) {
-        this.clientCorrelationId = clientCorrelationId;
-    }
-
-    public String getBillId() {
-        return billId;
-    }
-
-    public void setBillId(String billId) {
-        this.billId = billId;
-    }
-
-    public String getRequestType() {
-        return requestType;
-    }
-
-    public void setRequestType(String requestType) {
-        this.requestType = requestType;
-    }
-
-    public Bill getBill() {
-        return bill;
-    }
-
-    public void setBill(Bill bill) {
-        this.bill = bill;
-    }
-
-
-
 
 }

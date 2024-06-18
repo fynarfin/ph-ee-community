@@ -1,6 +1,8 @@
-package org.mifos.pheeBillPay.data;
+package org.mifos.pheebillpay.data;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,73 +16,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class Bill {
 
-    private String billerId;
     private String billerName;
-    private String billStatus;
-    private String dueDate;
-    private String amountonDueDate;
+    private double amount;
 
-    private String amountAfterDueDate;
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
-
-
-    public String getBillerId() {
-        return billerId;
-    }
-
-    public void setBillerId(String billerId) {
-        this.billerId = billerId;
-    }
-
-    public String getBillerName() {
-        return billerName;
-    }
-
-    public void setBillerName(String billerName) {
-        this.billerName = billerName;
-    }
-
-    public String getBillStatus() {
-        return billStatus;
-    }
-
-    public void setBillStatus(String billStatus) {
-        this.billStatus = billStatus;
-    }
-
-    public String getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(String dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public String getAmountonDueDate() {
-        return amountonDueDate;
-    }
-
-    public void setAmountonDueDate(String amountonDueDate) {
-        this.amountonDueDate = amountonDueDate;
-    }
-
-    public String getAmountAfterDueDate() {
-        return amountAfterDueDate;
-    }
-
-    public void setAmountAfterDueDate(String amountAfterDueDate) {
-        this.amountAfterDueDate = amountAfterDueDate;
-    }
-
-    @Override
-    public String toString() {
-        return "Bill{" +
-                "billerId='" + billerId + '\'' +
-                ", billerName='" + billerName + '\'' +
-                ", billStatus='" + billStatus + '\'' +
-                ", dueDate='" + dueDate + '\'' +
-                ", amountonDueDate='" + amountonDueDate + '\'' +
-                ", amountAfterDueDate='" + amountAfterDueDate + '\'' +
-                '}';
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        additionalProperties.put(name, value);
     }
 }

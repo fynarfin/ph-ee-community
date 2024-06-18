@@ -1,4 +1,4 @@
-package org.mifos.pheeBillPay.utils;
+package org.mifos.pheebillpay.utils;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;

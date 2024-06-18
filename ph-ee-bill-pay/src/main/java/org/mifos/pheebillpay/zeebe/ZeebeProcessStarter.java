@@ -1,17 +1,16 @@
-package org.mifos.pheeBillPay.zeebe;
+package org.mifos.pheebillpay.zeebe;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Start a Zeebe workflow
@@ -53,16 +52,11 @@ public class ZeebeProcessStarter {
         return UUID.randomUUID().toString();
     }
 
-    private String randomCharOfSize(int size) {
-        String data = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        char[] arr = data.toCharArray();
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < size; i++) {
-            int index = (int) (Math.random() * (data.length()));
-            s.append(arr[index]);
-        }
-        return s.toString();
-    }
-
+    /*
+     * private String randomCharOfSize(int size) { String data =
+     * "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; char[] arr = data.toCharArray(); StringBuilder
+     * s = new StringBuilder(); for (int i = 0; i < size; i++) { int index = (int) (Math.random() * data.length());
+     * s.append(arr[index]); } return s.toString(); }
+     */
 
 }

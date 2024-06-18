@@ -1,12 +1,11 @@
-package org.mifos.pheeBillPay.zeebe;
+package org.mifos.pheebillpay.zeebe;
 
 import io.camunda.zeebe.client.ZeebeClient;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.time.Duration;
 
 @Configuration
 @ConditionalOnExpression("${zeebe.enabled:true}")

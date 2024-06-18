@@ -1,30 +1,47 @@
-package org.mifos.pheeBillPay.data;
+package org.mifos.pheebillpay.data;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.io.Serializable;
+import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Component
 public class BillPaymentsReqDTO implements Serializable {
 
-    @Override
-    public String toString() {
-        return "BillPaymentsReqDTO{" +
-                "billInquiryRequestId='" + billInquiryRequestId + '\'' +
-                ", billId='" + billId + '\'' +
-                ", paymentReferenceID='" + paymentReferenceID + '\'' +
-                '}';
-    }
-
+    private String clientCorrelationId;
     private String billInquiryRequestId;
     private String billId;
     private String paymentReferenceID;
+
+    private Map<String, Object> additionalProperties = new HashMap<>();
+
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        additionalProperties.put(name, value);
+    }
+
+    @Override
+    public String toString() {
+        return "BillPaymentsReqDTO{" + "clientCorrelationId='" + clientCorrelationId + '\'' + ", billInquiryRequestId='"
+                + billInquiryRequestId + '\'' + ", billId='" + billId + '\'' + ", paymentReferenceID='" + paymentReferenceID + '\'' + '}';
+    }
+
+    public String getClientCorrelationId() {
+        return clientCorrelationId;
+    }
+
+    public void setClientCorrelationId(String clientCorrelationId) {
+        this.clientCorrelationId = clientCorrelationId;
+    }
 
     public String getBillInquiryRequestId() {
         return billInquiryRequestId;
@@ -50,6 +67,11 @@ public class BillPaymentsReqDTO implements Serializable {
         this.paymentReferenceID = paymentReferenceID;
     }
 
-
+    public BillPaymentsReqDTO(String clientCorrelationId, String billInquiryRequestId, String billId, String paymentReferenceID) {
+        this.clientCorrelationId = clientCorrelationId;
+        this.billInquiryRequestId = billInquiryRequestId;
+        this.billId = billId;
+        this.paymentReferenceID = paymentReferenceID;
+    }
 
 }
