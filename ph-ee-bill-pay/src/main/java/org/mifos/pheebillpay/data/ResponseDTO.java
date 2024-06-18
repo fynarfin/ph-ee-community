@@ -1,4 +1,4 @@
-package org.mifos.pheeBillPay.data;
+package org.mifos.pheebillpay.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Component
 public class ResponseDTO {
-    private String ResponseCode;
-    private String ResponseDescription;
-    private String RequestID;
+
+    private String responseCode;
+    private String responseDescription;
+    private String requestID;
 }

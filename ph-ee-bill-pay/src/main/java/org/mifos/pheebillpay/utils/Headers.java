@@ -1,4 +1,4 @@
-package org.mifos.pheeBillPay.utils;
+package org.mifos.pheebillpay.utils;
 
 import java.util.HashMap;
 import java.util.Map;

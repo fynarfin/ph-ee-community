@@ -1,9 +1,8 @@
-package org.mifos.pheeBillPay.properties;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+package org.mifos.pheebillpay.properties;
 
 import java.util.List;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "billers")

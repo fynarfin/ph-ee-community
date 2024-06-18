@@ -1,29 +1,22 @@
-package org.mifos.pheeBillPay.data;
+package org.mifos.pheebillpay.data;
 
-
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 
-/*Sample response
-{
-  "RequestID": "915251236706",
-  “code”: “00”
-   “reason”: “Transaction Successful”
-    "billId”: “123456789101112”,
-  “status”: “ACK”
-}
-
-* */
+/*
+ * Sample response { "RequestID": "915251236706", “code”: “00” “reason”: “Transaction Successful” "billId”:
+ * “123456789101112”, “status”: “ACK” }
+ *
+ */
 @Component
 public class BillPaymentsResponseDTO implements Serializable {
 
@@ -49,7 +42,6 @@ public class BillPaymentsResponseDTO implements Serializable {
         this.status = status;
     }
 
-
     public String getCode() {
         return code;
     }
@@ -66,7 +58,6 @@ public class BillPaymentsResponseDTO implements Serializable {
         this.reason = reason;
     }
 
-
     public String getBillId() {
         return billId;
     }
@@ -77,14 +68,8 @@ public class BillPaymentsResponseDTO implements Serializable {
 
     @Override
     public String toString() {
-        return "BillPaymentsResponseDTO{" +
-                "code='" + code + '\'' +
-                ", reason='" + reason + '\'' +
-                ", requestID='" + requestID + '\'' +
-                ", billId='" + billId + '\'' +
-                ", status='" + status + '\'' +
-                '}';
+        return "BillPaymentsResponseDTO{" + "code='" + code + '\'' + ", reason='" + reason + '\'' + ", requestID='" + requestID + '\''
+                + ", billId='" + billId + '\'' + ", status='" + status + '\'' + '}';
     }
-
 
 }

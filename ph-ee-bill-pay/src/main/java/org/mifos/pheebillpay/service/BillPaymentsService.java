@@ -1,18 +1,25 @@
-package org.mifos.pheeBillPay.service;
+package org.mifos.pheebillpay.service;
 
-import org.mifos.pheeBillPay.data.BillPaymentsReqDTO;
-import org.mifos.pheeBillPay.zeebe.ZeebeProcessStarter;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.BILL_ID;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.BILL_PAYMENTS_REQ;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.BILL_REQ_ID;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.CALLBACK_URL;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.CLIENTCORRELATIONID;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.PAYER_FSP_ID;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.PAYMENTS_REF_ID;
+import static org.mifos.pheebillpay.zeebe.ZeebeVariables.TENANT_ID;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.mifos.pheebillpay.data.BillPaymentsReqDTO;
+import org.mifos.pheebillpay.zeebe.ZeebeProcessStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.mifos.pheeBillPay.zeebe.ZeebeVariables.*;
-
 @Service
 public class BillPaymentsService {
+
     @Autowired
     private ZeebeProcessStarter zeebeProcessStarter;
 
@@ -21,8 +28,7 @@ public class BillPaymentsService {
 
     String transactionId;
 
-    public String billPayments(String tenantId, String correlationId, String callbackUrl, String payerFspId,
-                               BillPaymentsReqDTO body) {
+    public String billPayments(String tenantId, String correlationId, String callbackUrl, String payerFspId, BillPaymentsReqDTO body) {
         Map<String, Object> extraVariables = new HashMap<>();
         extraVariables.put(TENANT_ID, tenantId);
         extraVariables.put(CLIENTCORRELATIONID, correlationId);
@@ -32,9 +38,12 @@ public class BillPaymentsService {
         extraVariables.put(BILL_REQ_ID, body.getBillInquiryRequestId());
         extraVariables.put(CALLBACK_URL, callbackUrl);
         extraVariables.put(BILL_PAYMENTS_REQ, body);
+        extraVariables.put("payeePartyIdType", "Bill");
+        extraVariables.put("payeePartyId", body.getBillId());
+        extraVariables.put("payerPartyIdType", "Bill");
+        extraVariables.put("payerPartyId", payerFspId);
         String tenantSpecificBpmn = paymentNotificationFlow.replace("{dfspid}", tenantId);
-        transactionId = zeebeProcessStarter.startZeebeWorkflow(tenantSpecificBpmn,
-                body.toString(), extraVariables);
+        transactionId = zeebeProcessStarter.startZeebeWorkflow(tenantSpecificBpmn, body.toString(), extraVariables);
         return transactionId;
     }
 
