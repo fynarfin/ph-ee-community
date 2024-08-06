@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    ROOT: INFO
+
+callback_enabled: true
+
+
+zeebe:
+  client:
+    max-execution-threads: 100
+    number-of-workers: 5
+    evenly-allocated-max-jobs: "#{${zeebe.client.max-execution-threads} / ${zeebe.client.number-of-workers}}"
+  broker:
+    contactpoint: "localhost:26500"
+
+billPay:
+  billAlreadyPaidId : "003"
+  billIdInvalidId : "002"
+  billIdEmptyId : "00"
+  billPayTimeoutId : "005"
+
+management:
+  endpoint:
+    health:
+      enabled: true
+      probes:
+        enabled: true
+      liveness:
+        enabled: true
+      readiness:
+        enabled: true
+
+status:
+  billReqAcceptedId: "123"
+  billTimeout: 3
