@@ -1,0 +1,108 @@
+ph-ee-engine:
+  enabled: true
+
+  zeebe-operate-helm:
+    enabled: true
+
+  elasticsearch:
+    enabled: true
+
+  kibana:
+    enabled: false
+
+  operations:
+    enabled: true
+
+  ph_ee_connector_ams_mifos:
+    enabled: true
+
+  ph_ee_connector_mojaloop:
+    enabled: false
+
+  kafka:
+    enabled: true
+
+  channel:
+    enabled: true
+
+  mockpayment:
+    enabled: true
+
+  gsmachannel:
+    enabled: false
+
+  operations_app:
+    enabled: true
+
+  operations_web:
+    enabled: false
+
+  ph_ee_connector_gsma:
+    enabled: false
+
+  ph_ee_connector_slcb:
+    enabled: true
+    image: "419830066942.dkr.ecr.ap-south-1.amazonaws.com/ph-ee-slcb"
+    imageTag: latest
+
+  mpesa:
+    enabled: true
+
+  roster_connector:
+    enabled: true
+    pesacore:
+      auth_header: "PaymentHub"
+
+  paygops_connector:
+    enabled: true
+    paygops:
+      authheader: "PaymentHubTest"
+
+  notifications:
+    enabled: true
+
+  connector_bulk:
+    enabled: true
+
+  zeebe_ops:
+    enabled: true
+
+  messagegateway:
+    enabled: true
+
+  importer_es:
+    enabled: true
+
+  importer_rdbms:
+    enabled: true
+
+  kong:
+    enabled: false
+
+  keycloak:
+    enabled: false
+
+  mock-oracle:
+    enabled: true
+
+  redis:
+    enabled: true
+
+fin-engine:
+  enabled: true
+  communityapp:
+    enabled: false
+
+  fineract:
+    enabled: true
+
+  mariadb:
+    enabled: true
+    fullnameOverride: mysql
+
+operations:
+  enabled: true
+  grafana:
+    enabled: false
+  prometheus:
+    enabled: true

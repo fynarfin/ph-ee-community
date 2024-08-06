@@ -1,0 +1,68 @@
+prometheus:
+  enabled: true
+  server:
+    global:
+      scrape_interval: 10s
+    retention: "7d"
+    retentionSize: "7GB"
+
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    annotations:
+        kubernetes.io/ingress.class: "nginx"
+    hosts: ["grafana.sandbox.fynarfin.io"]
+    path: /
+    tls:
+      - secretName: sandbox-secret
+  persistence:
+    enabled: true  # enable persistence using Persistent Volumes
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:  # configure Grafana to read metrics from Prometheus
+        - name: Prometheus
+          type: prometheus
+          url: http://operate-prometheus-server # Since Prometheus is deployed in
+          access: proxy    # same namespace, this resolves
+          # to the Prometheus Server we installed previous
+          isDefault: true  # The default data source is Prometheus
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default' # Configure a dashboard provider file to
+          orgId: 1        # put Kong dashboard into.
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+  dashboards:
+    default:
+      kong-dash:
+        gnetId: 7424  # Install the following Grafana dashboard in the
+        revision: 11   # instance: https://grafana.com/dashboards/7424
+        datasource: Prometheus
+      kic-dash:
+        gnetId: 15662
+        datasource: Prometheus
+      kubernetes-cluster-monitoring:
+        gnetId: 1621
+        revision: 1
+        datasource: Prometheus
+      kubernetes-resource-requests:
+        gnetId: 7187
+        revision: 1
+        datasource: Prometheus
+      kubernetes-pods:
+        gnetId: 6336
+        revision: 1
+        datasource: Prometheus
+      kubernetes-cluster:
+        gnetId: 6417
+        revision: 1
+        datasource: Prometheus
