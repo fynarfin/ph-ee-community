@@ -124,7 +124,7 @@ configure(this) {
             targetExclude '**/build/**', '**/bin/**', '**/out/**'
             importOrder() //sort imports alphabetically
             removeUnusedImports()
-            eclipse().configFile "$rootDir/config/gsma-formatter.xml"
+            eclipse().configFile "${rootProject.projectDir}/../config/formatter.xml"
             endWithNewline()
             trimTrailingWhitespace()
             // Enforce style modifier order

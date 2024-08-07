@@ -1,0 +1,4 @@
+gradle.ext{
+    app_username = '<username>'
+    app_password = '<password>'
+}
