@@ -374,7 +374,7 @@ public class ZeebeWorkers {
     private void pauseExec() {
         try {
             logger.debug("Pausing execution for capturing intermediary status ");
-            scheduledThreadPoolExecutor.schedule(() -> {}, billTimeout, TimeUnit.SECONDS).get();
+            scheduledThreadPoolExecutor.schedule(() -> { }, billTimeout, TimeUnit.SECONDS).get();
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
