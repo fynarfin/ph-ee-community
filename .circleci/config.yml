@@ -787,7 +787,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-bulk:latest fynarfin/ph-ee-connector-bulk:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -806,7 +806,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-bulk:${JIRA_STORY}
             fi
   build_and_push_mojaloop_tag_image:
     executor: docker-executor
@@ -945,7 +945,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/cd ph-ee-connector-crm:latest fynarfin/cd ph-ee-connector-crm:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -964,7 +964,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/cd ph-ee-connector-crm:${JIRA_STORY}
             fi
   build_and_push_bill_pay_tag_image:
     executor: docker-executor
@@ -1025,7 +1025,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-bill-pay:latest fynarfin/ph-ee-bill-pay:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1044,7 +1044,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-bill-pay:${JIRA_STORY}
             fi
   build_and_push_ams_mifos_tag_image:
     executor: docker-executor
@@ -1108,7 +1108,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-ams-mifos:latest fynarfin/ph-ee-connector-ams-mifos:$JIRA_STORY
             fi
       # Log in to DockerHub using environment variables
       - run:
@@ -1126,7 +1126,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-ams-mifos:${JIRA_STORY}
             fi
   build_and_push_zeebe_ops_tag_image:
     executor: docker-executor
@@ -1186,7 +1186,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-zeebe-ops:latest fynarfin/ph-ee-zeebe-ops:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1205,7 +1205,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-zeebe-ops:${JIRA_STORY}
             fi
   build_and_push_mtn_tag_image:
     executor: docker-executor
@@ -1266,7 +1266,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PROJECT_REPONAME:latest fynarfin/$CIRCLE_PROJECT_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-mtn:latest fynarfin/ph-ee-connector-mtn:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1285,7 +1285,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PROJECT_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-mtn:${JIRA_STORY}
             fi
 
   build_and_push_airtel_tag_image:
@@ -1347,7 +1347,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-airtel:latest fynarfin/ph-ee-connector-airtel:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1366,7 +1366,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-airtel:${JIRA_STORY}
             fi
   build_and_push_mpesa_tag_image:
     executor: docker-executor
@@ -1424,7 +1424,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-mpesa:latest fynarfin/ph-ee-connector-mpesa:$JIRA_STORY
             fi
       # Log in to DockerHub using environment variables
       - run:
@@ -1442,7 +1442,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-mpesa:${JIRA_STORY}
             fi
   build_and_push_ams_paygops_tag_image:
     executor: docker-executor
@@ -1502,7 +1502,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-ams-paygops:latest fynarfin/ph-ee-connector-ams-paygops:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1521,7 +1521,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-ams-paygops:${JIRA_STORY}
             fi
   
   
