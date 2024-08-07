@@ -1,0 +1,44 @@
+plugins {
+    id 'org.springframework.boot' version '2.5.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+}
+
+group = 'org.mifos'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
+    }
+}
+
+ext {
+    springBootVersion = '2.5.5'
+}
+
+dependencies {
+    implementation 'org.mifos:ph-ee-connector-common:1.0.0-SNAPSHOT'
+    implementation 'org.apache.camel.springboot:camel-spring-boot-starter:3.4.0'
+    implementation 'org.apache.camel:camel-bean-validator:3.4.0'
+    implementation 'org.apache.camel:camel-undertow:3.4.0'
+    implementation 'org.apache.camel.springboot:camel-jackson-starter:3.4.0'
+    implementation 'io.camunda:zeebe-client-java:8.1.1'
+    implementation 'io.netty:netty-bom:4.1.65.Final'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1'
+    implementation 'org.json:json:20211205'
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'javax.mail:mail:1.4.7'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation "org.springframework.boot:spring-boot-starter:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
+}
+
+test {
+    useJUnitPlatform()
+}

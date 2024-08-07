@@ -33,6 +33,7 @@ jobs:
             JIRA_STORY: ''
             JIRA_STORY_DIR: ''
           command: |
+            cd ph-ee-env-labs
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
                 PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
                 PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
@@ -40,7 +41,7 @@ jobs:
                 if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY" && JIRA_STORY_DIR=$(echo /jira-story-version); fi
                 echo Charts will save in https://fynarfin.io/images/fynarfin$JIRA_STORY_DIR
             fi
-            CHART_URL="https://fynarfin.io/images/fynarfin$JIRA_STORY_DIR/ph-ee-g2p-sandbox-ci-0.0.0$JIRA_STORY"
+            CHART_URL="https://fynarfin.io/images/fynarfin$JIRA_STORY_DIR/ph-ee-g2psandbox-0.0.0$JIRA_STORY"
             if curl --output /dev/null --silent --head --fail "$CHART_URL"; then
               sed -i "11s@^ *repository:.*\$@  repository: $CHART_URL@" ph-ee-env-labs/helm/ph-ee-g2p-sandbox-ci/Chart.yaml
               sed -i "12s@^ *version:.*\$@  version: 0.0.0$JIRA_STORY@" ph-ee-env-labs/helm/ph-ee-g2p-sandbox-ci/Chart.yaml
@@ -67,7 +68,8 @@ jobs:
       TERM: dumb
     steps:
       - checkout
-      - run: rm -f ph-ee-env-template/helm/ph-ee-engine/Chart.lock ph-ee-env-template/helm/ph-ee-engine/requirements.lock helm/ph-ee-engine/charts/*
+      - run: git clone https://github.com/fynarfin/ph-ee-core
+      - run: rm -f ph-ee-env-template/helm/ph-ee-engine/Chart.lock ph-ee-env-template/helm/ph-ee-engine/requirements.lock ph-ee-env-template/helm/ph-ee-engine/charts/*
       - helm/install-helm-client:
           version: "v3.8.2"
       - run:
@@ -76,6 +78,7 @@ jobs:
             JIRA_STORY: ''
             JIRA_STORY_DIR: ''
           command: |
+            cd ph-ee-env-template
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
               PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
@@ -83,9 +86,9 @@ jobs:
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY" && JIRA_STORY_DIR=$(echo /jira-story-version); fi
               echo Charts will save in https://fynarfin.io/images/fynarfin$JIRA_STORY_DIR
             fi
-            sed -i "5s/.*/version: 0.0.0-SNAPSHOT$JIRA_STORY/" ph-ee-env-template/helm/ph-ee-engine/Chart.yaml
-            helm dep up ph-ee-env-template/helm/ph-ee-engine
-            helm package ph-ee-env-template/helm/ph-ee-engine
+            sed -i "5s/.*/version: 0.0.0-SNAPSHOT$JIRA_STORY/" helm/ph-ee-engine/Chart.yaml
+            helm dep up helm/ph-ee-engine
+            helm package helm/ph-ee-engine
             helm repo index .
             echo "$CERT_FILE" | base64 --decode > b64encoded.pem
             chmod 400 b64encoded.pem
@@ -100,6 +103,7 @@ jobs:
       TERM: dumb
     steps:
       - checkout
+      - run: git clone https://github.com/fynarfin/ph-ee-core
       - run: rm -f ph-ee-env-template/helm/g2p-sandbox/Chart.lock ph-ee-env-template/helm/g2p-sandbox/requirements.lock ph-ee-env-template/helm/g2p-sandbox/charts/*
       - helm/install-helm-client:
           version: "v3.8.2"
@@ -109,6 +113,7 @@ jobs:
             JIRA_STORY: ''
             JIRA_STORY_DIR: ''
           command: |
+            cd ph-ee-env-template
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
               PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
@@ -117,18 +122,18 @@ jobs:
             fi
             CHART_URL="https://fynarfin.io/images/fynarfin$JIRA_STORY_DIR/ph-ee-engine-0.0.0-SNAPSHOT$JIRA_STORY"
             if curl --output /dev/null --silent --head --fail "$CHART_URL"; then
-              sed -i "10s@^ *repository:.*\$@  repository: $CHART_URL@" ph-ee-env-template/helm/g2p-sandbox/Chart.yaml
-              sed -i "11s@^ *version:.*\$@  version: 0.0.0-SNAPSHOT$JIRA_STORY@" ph-ee-env-template/helm/g2p-sandbox/Chart.yaml
+              sed -i "10s@^ *repository:.*\$@  repository: $CHART_URL@" helm/g2p-sandbox/Chart.yaml
+              sed -i "11s@^ *version:.*\$@  version: 0.0.0-SNAPSHOT$JIRA_STORY@" helm/g2p-sandbox/Chart.yaml
               echo "chart used: < $CHART_URL >"
             else
               CHART_URL="https://fynarfin.io/images/fynarfin/ph-ee-engine-0.0.0-SNAPSHOT"
               echo "chart used: < $CHART_URL >"
             fi
-            sed -i "5s/.*/version: 0.0.0$JIRA_STORY/" ph-ee-env-template/helm/g2p-sandbox/Chart.yaml
-            # rm -rf ph-ee-env-template/helm/g2p-sandbox/templates/config.yml
-            cat ph-ee-env-template/helm/g2p-sandbox/Chart.yaml
-            helm dep up ph-ee-env-template/helm/g2p-sandbox
-            helm package ph-ee-env-template/helm/g2p-sandbox
+            sed -i "5s/.*/version: 0.0.0$JIRA_STORY/" helm/g2p-sandbox/Chart.yaml
+            # rm -rf helm/g2p-sandbox/templates/config.yml
+            cat helm/g2p-sandbox/Chart.yaml
+            helm dep up helm/g2p-sandbox
+            helm package helm/g2p-sandbox
             helm repo index .
             echo "$CERT_FILE" | base64 --decode > b64encoded.pem
             chmod 400 b64encoded.pem
@@ -153,6 +158,7 @@ jobs:
             JIRA_STORY: ''
             JIRA_STORY_DIR: ''
           command: |
+            cd ph-ee-env-labs
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
               PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
@@ -186,7 +192,7 @@ jobs:
       TERM: dumb
     steps:
       - checkout
-      - run: rm -f ph-ee-env-template/helm/g2p-sandbox-security/Chart.lock ph-ee-env-template/helm/g2p-sandbox-security/requirements.lock ph-ee-env-template/helm/g2p-sandbox-security/charts/*
+      - run: rm -f helm/g2p-sandbox-security/Chart.lock helm/g2p-sandbox-security/requirements.lock helm/g2p-sandbox-security/charts/*
       - helm/install-helm-client:
           version: "v3.8.2"
       - run:
@@ -195,6 +201,7 @@ jobs:
             JIRA_STORY: ''
             JIRA_STORY_DIR: ''
           command: |
+            cd ph-ee-env-template
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
               PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
@@ -203,19 +210,19 @@ jobs:
             fi
             CHART_URL="https://fynarfin.io/images/fynarfin$JIRA_STORY_DIR/ph-ee-engine-0.0.0-SNAPSHOT$JIRA_STORY"
             if curl --output /dev/null --silent --head --fail "$CHART_URL"; then
-              sed -i "10s@^ *repository:.*\$@  repository: $CHART_URL@" ph-ee-env-template/helm/g2p-sandbox-security/Chart.yaml
-              sed -i "11s@^ *version:.*\$@  version: 0.0.0-SNAPSHOT$JIRA_STORY@" ph-ee-env-template/helm/g2p-sandbox-security/Chart.yaml
+              sed -i "10s@^ *repository:.*\$@  repository: $CHART_URL@" helm/g2p-sandbox-security/Chart.yaml
+              sed -i "11s@^ *version:.*\$@  version: 0.0.0-SNAPSHOT$JIRA_STORY@" helm/g2p-sandbox-security/Chart.yaml
               echo "chart used: < $CHART_URL >"
             else
               CHART_URL="https://fynarfin.io/images/fynarfin/ph-ee-engine-0.0.0-SNAPSHOT"
               echo "chart used: < $CHART_URL >"
             fi
-            sed -i "5s/.*/version: 0.0.0$JIRA_STORY/" ph-ee-env-template/helm/g2p-sandbox-security/Chart.yaml
-            cat ph-ee-env-template/helm/g2p-sandbox-security/Chart.yaml
-            # - run: "sed -i '4s/.*/version: 0.0.0-SNAPSHOT/' ph-ee-env-template/helm/g2p-sandbox-security/requirements.yaml"
+            sed -i "5s/.*/version: 0.0.0$JIRA_STORY/" helm/g2p-sandbox-security/Chart.yaml
+            cat helm/g2p-sandbox-security/Chart.yaml
+            # - run: "sed -i '4s/.*/version: 0.0.0-SNAPSHOT/' helm/g2p-sandbox-security/requirements.yaml"
             # SED & replace dependency with 0.0.0
-            helm dep up ph-ee-env-template/helm/g2p-sandbox-security
-            helm package ph-ee-env-template/helm/g2p-sandbox-security
+            helm dep up helm/g2p-sandbox-security
+            helm package helm/g2p-sandbox-security
             helm repo index .
             echo "$CERT_FILE" | base64 --decode > b64encoded.pem
             chmod 400 b64encoded.pem
@@ -244,7 +251,7 @@ jobs:
         default: "minikube"
         type: string
       service-file-path:
-        default: https://raw.githubusercontent.com/fynarfin/ph-ee-core/ph-ee-env-labs/develop/.circleci/services.txt
+        default: https://raw.githubusercontent.com/fynarfin/ph-ee-community/ph-ee-env-labs/develop/.circleci/services.txt
         type: string
       chart-base-url:
         default: https://fynarfin.io/images/fynarfin
@@ -261,7 +268,7 @@ jobs:
       - run:
           name: run minikube
           no_output_timeout: 40m
-          command: |
+          command : |
             free -m
             #!/bin/bash
             #insatll kubectl--------
@@ -292,7 +299,7 @@ jobs:
             MINIKUBE_IP=`minikube ip`
             echo $MINIKUBE_IP
             # cat ~/.kube/config
-
+            
             minikube kubectl -- get po -A #Interact with Minikube cluster
             kubectl create namespace paymenthub
             kubectl get -A namespace  
@@ -329,7 +336,7 @@ jobs:
             # SYSTEMD_LESS=FRXMK  systemctl status nginx.service
 
             # sleep 10
-
+            
             # echo "test-nginx-proxy"
             # curl -u minikube:minikube http://localhost:8080
 
@@ -387,7 +394,7 @@ jobs:
                   generate_values_to_override $line
                 done < "$file"
             }
-
+            
             function generate_values_to_override() {
               PREFIX="docker.io/"
               if [ "$CIRCLE_BRANCH" != "develop" ] && check_for_image_tag ${2#"$PREFIX"} ${JIRA_STORY}; then
@@ -402,13 +409,13 @@ jobs:
               curl --silent -f --head -lL https://hub.docker.com/v2/repositories/$1/tags/$2/ > /dev/null
             }
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
-
+            
               PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY" && JIRA_STORY_DIR=$(echo /jira-story-version); fi
             fi 
-
+            
             echo $SERVICE_FILE_PATH
             wget $SERVICE_FILE_PATH 
             filename=$(basename "$SERVICE_FILE_PATH")
@@ -416,7 +423,7 @@ jobs:
             sed -i 's/ph-ee-g2p-sandbox-ci\.p/p/g' $filename 
             echo $filename
             get_services_from_file $filename
-
+            
             if [ -n "${VALUES_TO_OVERRIDE}" ]; then
                 VALUES_TO_OVERRIDE=$(echo --set ${VALUES_TO_OVERRIDE::-1})
                 echo "VALUES_TO_OVERRIDE: $VALUES_TO_OVERRIDE"
@@ -428,11 +435,11 @@ jobs:
             if [ -n "${JIRA_STORY}" ]; then
               JIRA_STORY=-$(echo $JIRA_STORY)
             fi
-
+            
             # Generating the chart url for deployment
             # chart: "https://fynarfin.io/images/ph-ee-g2p-sandbox-ci/ph-ee-g2p-sandbox-ci-0.0.0.tgz"
             ORB_PARAM_CHART=$(echo "$ORB_CHART_BASE_URL$JIRA_STORY_DIR/$ORB_CHART_NAME$JIRA_STORY/$ORB_CHART_NAME-$ORB_CHART_VERSION$JIRA_STORY.tgz")
-
+            
             CHART_URL="$ORB_PARAM_CHART"
             if curl --output /dev/null --silent --head --fail "$CHART_URL"; then
               echo "chart used: < $CHART_URL >"
@@ -443,7 +450,7 @@ jobs:
               ORB_PARAM_REPO=$(echo "$ORB_CHART_BASE_URL/$ORB_CHART_NAME")
               echo "chart used: < $CHART_URL >"
             fi
-
+            
             echo helm repo add "${ORB_PARAM_RELEASE_NAME}" "${ORB_PARAM_REPO}"
             helm repo add "${ORB_PARAM_RELEASE_NAME}" "${ORB_PARAM_REPO}"
 
@@ -451,13 +458,13 @@ jobs:
             helm repo update
             echo "helm upgrade --install ${VALUES_TO_OVERRIDE} ${ORB_PARAM_RELEASE_NAME} ${ORB_PARAM_CHART} ${ORB_PARAM_NAMESPACE}"
             echo helm chart install starts
-
+            
             # Download ph-ee-g2p-sandbox-ci-chart and extract
             curl -O $ORB_CHART_BASE_URL$JIRA_STORY_DIR/$ORB_CHART_NAME$JIRA_STORY/$ORB_CHART_NAME-$ORB_CHART_VERSION$JIRA_STORY.tgz && tar xvf $ORB_CHART_NAME-$ORB_CHART_VERSION$JIRA_STORY.tgz
             rm -rf $ORB_CHART_NAME-$ORB_CHART_VERSION$JIRA_STORY.tgz
-
+            
             ORB_PARAM_REPO=$(echo "$ORB_CHART_BASE_URL/$ORB_CHART_NAME")
-
+            
             EXTRA_VALUES=$(echo "-f ph-ee-g2p-sandbox-ci/values_p1.yaml")
             helm upgrade ${EXTRA_VALUES} --install  --timeout=1h ${VALUES_TO_OVERRIDE} ${ORB_PARAM_RELEASE_NAME} ${ORB_PARAM_CHART} ${ORB_PARAM_NAMESPACE} 
             echo --------------------helm upgrade in Phase 1 done---------------------
@@ -466,7 +473,7 @@ jobs:
             echo --------------------helm upgrade in Phase 2 done---------------------
             echo --------------------helm upgrade is done---------------------
             sleep 1m;
-
+            
             # ----------------------Post-Installation-Steps-starts---------------------------
             # #ES and Kibana secret creation
             # git clone -b 7.17 https://github.com/elastic/helm-charts.git elastic/helm-charts
@@ -482,7 +489,7 @@ jobs:
             # kubectl get secret kibana -n default -o yaml | sed 's/namespace: default/namespace: paymenthub/' | kubectl create -f -
             # kubectl get secrets -n paymenthub
             # echo ---------secrets created--------
-
+            
             # #insatll netcat
             # sudo apt install -y netcat
             # check_count=0
@@ -493,7 +500,7 @@ jobs:
             # done;
             # echo ------zeebe-ops service available-----------
             # # until nc -vz ph-ee-zeebe-ops 80; do echo "Waiting for zeebe-ops service"; sleep 2; done;
-
+            
             # #Deploy BPMN 
             # kubectl port-forward service/ph-ee-zeebe-ops 5000:80 -n paymenthub & #portforward zeebe-ops &'
             # git clone https://github.com/fynarfin/ph-ee-env-labs.git fynarfin/ph-ee-env-labs
@@ -540,7 +547,7 @@ jobs:
                 echo " " >> all_pod_logs.log
                 echo " " >> all_pod_logs.log
             done
-
+            
             echo "Fetch Integration Test Report for GOV"
             kubectl cp paymenthub/`kubectl get pods -n paymenthub | grep g2p-sandbox-test-gov |cut -d " " -f1`:/ph-ee-connector-integration-test/build integration_report/test-report
             # Specify the path to the downloaded file 
@@ -555,7 +562,7 @@ jobs:
             echo "File is no longer empty, processing..."
             mv integration_report/test-report/cucumber.xml integration_report/test-report/cucumber_gov.xml
             mv integration_report/test-report/reports/tests/test integration_report/test-report/reports/tests/test_gov
-
+            
             mkdir -p integration_report_final
             cp integration_report/test-report/cucumber_gov.xml integration_report_final/ || echo ""
             cp integration_report/test-report/cucumber_ams.xml integration_report_final/ || echo ""
@@ -615,7 +622,6 @@ jobs:
           name: Build Docker image for ph-ee-connector-ams-pesa
           command: |
             cd ph-ee-connector-ams-pesa
-            ./gradlew checkstyleMain
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-ams-pesa:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
@@ -772,7 +778,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            ph-ee-connector-bulk
+            cd ph-ee-connector-bulk
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-bulk:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
@@ -780,7 +786,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-bulk:latest fynarfin/ph-ee-connector-bulk:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -799,7 +805,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-bulk:${JIRA_STORY}
             fi
   build_and_push_mojaloop_tag_image:
     executor: docker-executor
@@ -825,7 +831,7 @@ jobs:
             fi
 
             # Build and tag the Docker image
-            cd ph-ee-connector-mojaloop
+            cd ph-ee-connector-mojaloop-java
             ./gradlew bootJar
             docker build -t "fynarfin/ph-ee-connector-mojaloop:$IMAGE_TAG" .
 
@@ -851,7 +857,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-mojaloop
+            cd ph-ee-connector-mojaloop-java
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-mojaloop:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
@@ -938,7 +944,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-crm:latest fynarfin/ph-ee-connector-crm:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -957,7 +963,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-crm:${JIRA_STORY}
             fi
   build_and_push_bill_pay_tag_image:
     executor: docker-executor
@@ -1018,7 +1024,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-bill-pay:latest fynarfin/ph-ee-bill-pay:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1037,7 +1043,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-bill-pay:${JIRA_STORY}
             fi
   build_and_push_ams_mifos_tag_image:
     executor: docker-executor
@@ -1101,7 +1107,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-ams-mifos:latest fynarfin/ph-ee-connector-ams-mifos:$JIRA_STORY
             fi
       # Log in to DockerHub using environment variables
       - run:
@@ -1119,7 +1125,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-ams-mifos:${JIRA_STORY}
             fi
   build_and_push_zeebe_ops_tag_image:
     executor: docker-executor
@@ -1179,7 +1185,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-zeebe-ops:latest fynarfin/ph-ee-zeebe-ops:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1198,7 +1204,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-zeebe-ops:${JIRA_STORY}
             fi
   build_and_push_mtn_tag_image:
     executor: docker-executor
@@ -1251,7 +1257,6 @@ jobs:
           name: Build Docker image
           command: |
             cd ph-ee-connector-mtn
-            ./gradlew checkstyleMain
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-mtn:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
@@ -1259,7 +1264,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PROJECT_REPONAME:latest fynarfin/$CIRCLE_PROJECT_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-mtn:latest fynarfin/ph-ee-connector-mtn:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1278,7 +1283,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PROJECT_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-mtn:${JIRA_STORY}
             fi
 
   build_and_push_airtel_tag_image:
@@ -1340,7 +1345,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-airtel:latest fynarfin/ph-ee-connector-airtel:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1359,7 +1364,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-airtel:${JIRA_STORY}
             fi
   build_and_push_mpesa_tag_image:
     executor: docker-executor
@@ -1385,6 +1390,7 @@ jobs:
             fi
 
             # Build and tag the Docker image
+            cd ph-ee-connector-mpesa
             ./gradlew bootJar
             docker build -t "fynarfin/ph-ee-connector-mpesa:$IMAGE_TAG" .
 
@@ -1410,6 +1416,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
+            cd ph-ee-connector-mpesa
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-mpesa:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
@@ -1417,7 +1424,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-mpesa:latest fynarfin/ph-ee-connector-mpesa:$JIRA_STORY
             fi
       # Log in to DockerHub using environment variables
       - run:
@@ -1435,7 +1442,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-mpesa:${JIRA_STORY}
             fi
   build_and_push_ams_paygops_tag_image:
     executor: docker-executor
@@ -1495,7 +1502,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/$CIRCLE_PR_REPONAME:latest fynarfin/$CIRCLE_PR_REPONAME:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-ams-paygops:latest fynarfin/ph-ee-connector-ams-paygops:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1514,9 +1521,9 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/$CIRCLE_PR_REPONAME:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-ams-paygops:${JIRA_STORY}
             fi
-
+  
   
 
   deploy:
@@ -1643,69 +1650,4 @@ workflows:
       - build_and_push_gsma_mm_latest_image:
           context:
             - DOCKER
-      - build-and-host-engine:
-          requires:
-            - build_and_push_mpesa_tag_image
-            - build_and_push_mpesa_latest_image
-            - build_and_push_ams_pesa_tag_image
-            - build_and_push_ams_pesa_latest_image
-            - build_and_push_ams_paygops_tag_image
-            - build_and_push_ams_paygops_latest_image
-            - build_and_push_airtel_latest_image
-            - build_and_push_airtel_tag_image
-            - build_and_push_mtn_latest_image
-            - build_and_push_mtn_tag_image
-            - build_and_push_zeebe_ops_latest_image
-            - build_and_push_zeebe_ops_tag_image
-            - build_and_push_ams_mifos_latest_image
-            - build_and_push_ams_mifos_tag_image
-            - build_and_push_bill_pay_latest_image
-            - build_and_push_bill_pay_tag_image
-            - build_and_push_crm_tag_image
-            - build_and_push_crm_latest_image
-            - build_and_push_mojaloop_latest_image
-            - build_and_push_mojaloop_tag_image
-            - build_and_push_connector_bulk_latest_image
-            - build_and_push_connector_bulk_tag_image
-            - build_and_push_gsma_mm_tag_image
-            - build_and_push_gsma_mm_latest_image
-          context:
-            - AWS
-            - Helm
-            - slack
-      - build-and-host-g2p-sandbox:
-          requires:
-            - build-and-host-engine
-          context:
-            - AWS
-            - Helm
-            - slack
-      - build-host-g2p-fyn-chart:
-          requires:
-            - build-and-host-g2p-sandbox
-          context:
-            - AWS
-            - Helm
-      - build-g2p-sandbox-ci-chart:
-          requires:
-            - build-host-g2p-fyn-chart
-          context:
-            - AWS
-            - Helm
-            - slack
-      - build-and-host-g2p-sandbox-security:
-          requires:
-            - build-g2p-sandbox-ci-chart
-          context:
-            - AWS
-            - Helm
-            - slack
-      - minikube-run-helm-upgrade-and-helm-test:
-          context:
-            - AWS
-            - Helm
-            - slack
-            - Ngrok
-          requires:
-            - build-g2p-sandbox-ci-chart
 

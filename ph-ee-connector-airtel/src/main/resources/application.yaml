@@ -1,0 +1,28 @@
+dfspids: "DFSPID"
+
+transaction-id-length: -1
+
+timer: "PT45S"
+
+operations:
+  url: "http://bb-operations.mifos.io/api/v1"
+  auth-enabled: false
+  endpoint:
+    transfers: "/transfers?page=0&size=1&"
+    transactionReq: "/transactionRequests/?"
+
+bpmn:
+  flows:
+    airtel_flow_mifos: "airtel_flow_mifos-{dfspid}"
+
+ams:
+  groups:
+    - identifier: "accountid"
+      value: "fineract"
+    - identifier: "default"
+      value : "fineract"
+
+
+logging:
+  level:
+    root: INFO

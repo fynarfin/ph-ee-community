@@ -1,0 +1,7 @@
+include 'ph-ee-connector-ams-paygops','ph-ee-bill-pay', 'ph-ee-connector-ams-pesa', 'ph-ee-connector-airtel',
+        'ph-ee-connector-ams-mifos', 'ph-ee-connector-crm', 'ph-ee-connector-gsma-mm', 'ph-ee-connector-mojaloop-java',
+        'ph-ee-connector-mpesa', 'ph-ee-connector-mtn', 'ph-ee-zeebe-ops'
+gradle.ext{
+    app_username = '<username>'
+    app_password = '<password>'
+}
