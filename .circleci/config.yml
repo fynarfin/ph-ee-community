@@ -963,7 +963,7 @@ jobs:
             PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
             PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/cd ph-ee-connector-crm:${JIRA_STORY}
+            docker push fynarfin/ph-ee-connector-crm:${JIRA_STORY}
             fi
   build_and_push_bill_pay_tag_image:
     executor: docker-executor
