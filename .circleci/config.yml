@@ -832,7 +832,7 @@ jobs:
             fi
 
             # Build and tag the Docker image
-            cd ph-ee-connector-mojaloop
+            cd ph-ee-connector-mojaloop-java
             ./gradlew bootJar
             docker build -t "fynarfin/ph-ee-connector-mojaloop:$IMAGE_TAG" .
 
@@ -858,7 +858,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-mojaloop
+            cd ph-ee-connector-mojaloop-java
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-mojaloop:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
@@ -1392,6 +1392,7 @@ jobs:
             fi
 
             # Build and tag the Docker image
+            cd ph-ee-connector-mpesa
             ./gradlew bootJar
             docker build -t "fynarfin/ph-ee-connector-mpesa:$IMAGE_TAG" .
 
@@ -1417,6 +1418,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
+            cd ph-ee-connector-mpesa
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-mpesa:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
