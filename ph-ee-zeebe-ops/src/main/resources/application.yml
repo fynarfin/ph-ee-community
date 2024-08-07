@@ -1,0 +1,50 @@
+camel:
+  server-port: 5000
+  springboot:
+    main-run-controller: true
+  dataformat:
+    json-jackson:
+      auto-discover-object-mapper: true
+
+tenants: "ibank-india,ibank-usa"
+
+zeebe:
+  client:
+    max-execution-threads: 100
+    number-of-workers: 5
+    evenly-allocated-max-jobs: "#{${zeebe.client.max-execution-threads} / ${zeebe.client.number-of-workers}}"
+  broker:
+    contactpoint: "localhost:26500"
+
+spring:
+  data:
+    elasticsearch:
+      client:
+        reactive:
+          endpoints: "localhost:9200"
+
+logging:
+  level:
+    root: INFO
+
+elasticsearch:
+  url: "https://ph-ee-elasticsearch:9200/"
+  security:
+    enabled: false
+  sslVerification: false
+  username: "elastic"
+  password: "spmepassword"
+
+
+
+management:
+  endpoint:
+    health:
+      enabled: true
+      probes:
+        enabled: true
+      liveness:
+        enabled: true
+      readiness:
+        enabled: true
+#      show-details: always
