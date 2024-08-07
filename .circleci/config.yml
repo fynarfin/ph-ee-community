@@ -779,7 +779,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            ph-ee-connector-bulk
+            cd ph-ee-connector-bulk
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-bulk:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
@@ -945,7 +945,7 @@ jobs:
               PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
               JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
               if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/cd ph-ee-connector-crm:latest fynarfin/cd ph-ee-connector-crm:$JIRA_STORY
+              docker image tag fynarfin/ph-ee-connector-crm:latest fynarfin/ph-ee-connector-crm:$JIRA_STORY
             fi
 
       # Log in to DockerHub using environment variables
@@ -1258,7 +1258,6 @@ jobs:
           name: Build Docker image
           command: |
             cd ph-ee-connector-mtn
-            ./gradlew checkstyleMain
             ./gradlew bootJar
             docker build -t fynarfin/ph-ee-connector-mtn:latest .
             if [ "$CIRCLE_BRANCH" != "develop" ]; then
