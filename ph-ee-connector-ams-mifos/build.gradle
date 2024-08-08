@@ -136,7 +136,7 @@ configure(this) {
             targetExclude '**/build/**', '**/bin/**', '**/out/**'
             importOrder() //sort imports alphabetically
             removeUnusedImports()
-            eclipse().configFile "${rootProject.projectDir}/../config/formatter.xml"
+            eclipse().configFile(rootProject.file('config/formatter.xml'))
             endWithNewline()
             trimTrailingWhitespace()
             // Enforce style modifier order
