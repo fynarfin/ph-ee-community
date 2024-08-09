@@ -621,57 +621,117 @@ jobs:
       - run:
           name: Build Docker image for ph-ee-connector-ams-pesa
           command: |
-            cd ph-ee-connector-ams-pesa
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-connector-ams-pesa:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-ams-pesa:latest fynarfin/ph-ee-connector-ams-pesa:$JIRA_STORY
+            if [ "$BUILD_AMS_PESA" == "true" ]; then
+              cd ph-ee-connector-ams-pesa
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-connector-ams-pesa:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-ams-pesa:latest fynarfin/ph-ee-connector-ams-pesa:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-ams-pesa."
             fi
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_AMS_PESA" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-ams-pesa."
+            fi
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-              docker push fynarfin/ph-ee-connector-ams-pesa:latest
+            if [ "$BUILD_AMS_PESA" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-ams-pesa:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-ams-pesa:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-ams-pesa."
             fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              docker push fynarfin/ph-ee-connector-ams-pesa:${JIRA_STORY}
+  check_for_changes_ams_pesa:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
+
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_AMS_PESA=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-ams-pesa directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-ams-pesa; then
+                echo "No changes in ph-ee-connector-ams-pesa, skipping build."
+                echo "export BUILD_AMS_PESA=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-ams-pesa, proceeding with build."
+                echo "export BUILD_AMS_PESA=true" >> $BASH_ENV
+              fi
             fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   check_for_changes_bill_pay:
     executor: docker-executor
     steps:
       - checkout
       - run:
-          name: Check for changes in ph-ee-bill-pay
+          name: Check for changes in AMS Mifos
           command: |
             # Fetch the latest changes
             git fetch origin
 
-            # Determine the commit range
+            # Determine the base branch for the PR
             if [ -z "$CIRCLE_PULL_REQUEST" ]; then
               echo "Not a pull request, skipping check."
               echo "export BUILD_BILLPAY=false" >> $BASH_ENV
             else
-              # Extract PR number from the CIRCLE_PULL_REQUEST URL
+              # Extract the PR number from the pull request URL
               PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
-            
-              # Fetch PR details using GitHub API
-              PR_DETAILS=$(curl -sSL "https://api.github.com/repos/fynarfin/ph-ee-community/pulls/$PR_NUMBER")
-            
-              PR_BASE_BRANCH=$(echo "$PR_DETAILS" | jq -r .base.ref)
-              PR_HEAD_BRANCH=$(echo "$PR_DETAILS" | jq -r .head.ref)
 
-              # Check for changes in the ph-ee-bill-pay directory
-              if git diff --quiet origin/$PR_BASE_BRANCH...origin/$PR_HEAD_BRANCH -- ph-ee-bill-pay; then
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-bill-pay directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-bill-pay; then
                 echo "No changes in ph-ee-bill-pay, skipping build."
                 echo "export BUILD_BILLPAY=false" >> $BASH_ENV
               else
@@ -717,6 +777,46 @@ jobs:
               else
                 echo "Changes detected in ph-ee-connector-ams-mifos, proceeding with build."
                 echo "export BUILD_AMS_MIFOS=true" >> $BASH_ENV
+              fi
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  check_for_changes_gsma_mm:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
+
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_GSMA=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-gsma-mm directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-gsma-mm; then
+                echo "No changes in ph-ee-connector-gsma-mm, skipping build."
+                echo "export BUILD_GSMA=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-gsma-mm, proceeding with build."
+                echo "export BUILD_GSMA=true" >> $BASH_ENV
               fi
             fi
       - persist_to_workspace:
@@ -773,38 +873,94 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-gsma-mm
-            ./gradlew checkstyleMain
-            ./gradlew checkstyleTest
-            ./gradlew clean bootJar
-            docker build -t fynarfin/ph-ee-connector-gsma:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-gsma:latest fynarfin/ph-ee-connector-gsma:$JIRA_STORY
+            if [ "$BUILD_GSMA" == "true" ]; then
+              cd ph-ee-connector-gsma-mm
+              ./gradlew checkstyleMain
+              ./gradlew checkstyleTest
+              ./gradlew clean bootJar
+              docker build -t fynarfin/ph-ee-connector-gsma:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-gsma:latest fynarfin/ph-ee-connector-gsma:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-gsma-mm."
             fi
 
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_GSMA" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-gsma-mm."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-connector-gsma:latest
+            if [ "$BUILD_GSMA" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-gsma:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-gsma:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-gsma-mm."
             fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-connector-gsma:${JIRA_STORY}
-            fi
+  check_for_changes_connector:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
 
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_CONNECTOR=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-bulk directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-bulk; then
+                echo "No changes in ph-ee-connector-bulk, skipping build."
+                echo "export BUILD_CONNECTOR=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-bulk, proceeding with build."
+                echo "export BUILD_CONNECTOR=true" >> $BASH_ENV
+              fi
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   build_and_push_connector_bulk_tag_image:
     executor: docker-executor
     environment:
@@ -855,34 +1011,51 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-bulk
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-connector-bulk:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-bulk:latest fynarfin/ph-ee-connector-bulk:$JIRA_STORY
+            if [ "$BUILD_CONNECTOR" == "true" ]; then
+              cd ph-ee-connector-bulk
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-connector-bulk:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-bulk:latest fynarfin/ph-ee-connector-bulk:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-bulk."
             fi
 
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_CONNECTOR" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-bulk."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-connector-bulk:latest
-            fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-connector-bulk:${JIRA_STORY}
+            if [ "$BUILD_CONNECTOR" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-bulk:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-bulk:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-bulk."
             fi
   build_and_push_mojaloop_tag_image:
     executor: docker-executor
@@ -1019,6 +1192,46 @@ jobs:
             else
               echo "Skipping push as there are no changes in ph-ee-connector-mojaloop-java."
             fi
+  check_for_changes_crm:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
+
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_CRM=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-mtn directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-mtn; then
+                echo "No changes in ph-ee-connector-mtn, skipping build."
+                echo "export BUILD_CRM=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-crm, proceeding with build."
+                echo "export BUILD_CRM=true" >> $BASH_ENV
+              fi
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   build_and_push_crm_tag_image:
     executor: docker-executor
     environment:
@@ -1069,34 +1282,51 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-crm
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-connector-crm:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-crm:latest fynarfin/ph-ee-connector-crm:$JIRA_STORY
+            if [ "$BUILD_CRM" == "true" ]; then
+              cd ph-ee-connector-crm
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-connector-crm:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-crm:latest fynarfin/ph-ee-connector-crm:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-crm."
             fi
 
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_CRM" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-crm."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-connector-crm:latest
-            fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-connector-crm:${JIRA_STORY}
+            if [ "$BUILD_CRM" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-crm:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-crm:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-crm."
             fi
   build_and_push_bill_pay_tag_image:
     executor: docker-executor
@@ -1267,6 +1497,46 @@ jobs:
             else
               echo "Skipping push as there are no changes in ph-ee-connector-ams-mifos."
             fi
+  check_for_changes_zeebe_ops:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
+
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_ZEEBE_OPS=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-zeebe-ops directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-zeebe-ops; then
+                echo "No changes in ph-ee-zeebe-ops, skipping build."
+                echo "export BUILD_ZEEBE_OPS=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-zeebe-ops, proceeding with build."
+                echo "export BUILD_ZEEBE_OPS=true" >> $BASH_ENV
+              fi
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   build_and_push_zeebe_ops_tag_image:
     executor: docker-executor
     environment:
@@ -1317,35 +1587,92 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-zeebe-ops
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-zeebe-ops:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-zeebe-ops:latest fynarfin/ph-ee-zeebe-ops:$JIRA_STORY
+            if [ "$BUILD_ZEEBE_OPS" == "true" ]; then
+              cd ph-ee-zeebe-ops
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-zeebe-ops:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-zeebe-ops:latest fynarfin/ph-ee-zeebe-ops:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-zeebe-ops."
             fi
 
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_ZEEBE_OPS" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-zeebe-ops."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-zeebe-ops:latest
+            if [ "$BUILD_ZEEBE_OPS" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-zeebe-ops:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-zeebe-ops:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-zeebe-ops."
             fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-zeebe-ops:${JIRA_STORY}
+  check_for_changes_mtn:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
+
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_MTN=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-mtn directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-mtn; then
+                echo "No changes in ph-ee-connector-mtn, skipping build."
+                echo "export BUILD_MTN=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-mtn, proceeding with build."
+                echo "export BUILD_MTN=true" >> $BASH_ENV
+              fi
             fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   build_and_push_mtn_tag_image:
     executor: docker-executor
     environment:
@@ -1396,36 +1723,92 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-mtn
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-connector-mtn:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-mtn:latest fynarfin/ph-ee-connector-mtn:$JIRA_STORY
+            if [ "$BUILD_MTN" == "true" ]; then
+              cd ph-ee-connector-mtn
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-connector-mtn:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-mtn:latest fynarfin/ph-ee-connector-mtn:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-mtn."
             fi
 
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_MTN" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-mtn."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-connector-mtn:latest
+            if [ "$BUILD_MTN" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-mtn:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-mtn:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-mtn."
             fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PROJECT_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-connector-mtn:${JIRA_STORY}
-            fi
+  check_for_changes_airtel:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
 
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_AIRTEL=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-airtel directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-airtel; then
+                echo "No changes in ph-ee-connector-airtel, skipping build."
+                echo "export BUILD_AIRTEL=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-airtel, proceeding with build."
+                echo "export BUILD_AIRTEL=true" >> $BASH_ENV
+              fi
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   build_and_push_airtel_tag_image:
     executor: docker-executor
     environment:
@@ -1476,36 +1859,93 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-airtel
-            ./gradlew checkstyleMain
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-connector-airtel:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-airtel:latest fynarfin/ph-ee-connector-airtel:$JIRA_STORY
+            if [ "$BUILD_AIRTEL" == "true" ]; then
+              cd ph-ee-connector-airtel
+              ./gradlew checkstyleMain
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-connector-airtel:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-airtel:latest fynarfin/ph-ee-connector-airtel:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-airtel."
             fi
 
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_AIRTEL" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-airtel."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-connector-airtel:latest
+            if [ "$BUILD_AIRTEL" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-airtel:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-airtel:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-airtel."
             fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-connector-airtel:${JIRA_STORY}
+  check_for_changes_mpesa:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
+
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_MPESA=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-mpesa directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-mpesa; then
+                echo "No changes in ph-ee-connector-mpesa, skipping build."
+                echo "export BUILD_MPESA=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-mpesa, proceeding with build."
+                echo "export BUILD_MPESA=true" >> $BASH_ENV
+              fi
             fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   build_and_push_mpesa_tag_image:
     executor: docker-executor
     environment:
@@ -1556,33 +1996,51 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-mpesa
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-connector-mpesa:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-mpesa:latest fynarfin/ph-ee-connector-mpesa:$JIRA_STORY
+            if [ "$BUILD_MPESA" == "true" ]; then
+              cd ph-ee-connector-mpesa
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-connector-mpesa:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-mpesa:latest fynarfin/ph-ee-connector-mpesa:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-mpesa."
             fi
+
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_MPESA" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-mpesa."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-connector-mpesa:latest
-            fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-connector-mpesa:${JIRA_STORY}
+            if [ "$BUILD_MPESA" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-mpesa:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-mpesa:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-mpesa."
             fi
   check_for_changes_paygops:
     executor: docker-executor
@@ -1743,6 +2201,14 @@ workflows:
       - check_for_changes_ams_mifos
       - check_for_changes_mojaloop
       - check_for_changes_paygops
+      - check_for_changes_mpesa
+      - check_for_changes_airtel
+      - check_for_changes_mtn
+      - check_for_changes_zeebe_ops
+      - check_for_changes_crm
+      - check_for_changes_connector
+      - check_for_changes_gsma_mm
+      - check_for_changes_ams_pesa
       - build_and_push_ams_pesa_tag_image:
           filters:
             tags:
@@ -1750,6 +2216,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_ams_pesa_latest_image:
+          requires:
+            - check_for_changes_ams_pesa
           context:
             - DOCKER
       - build_and_push_mpesa_tag_image:
@@ -1759,6 +2227,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_mpesa_latest_image:
+          requires:
+            - check_for_changes_mpesa
           context:
             - DOCKER
       - build_and_push_ams_paygops_tag_image:
@@ -1779,6 +2249,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_airtel_latest_image:
+          requires:
+            - check_for_changes_airtel
           context:
             - DOCKER
       - build_and_push_mtn_tag_image:
@@ -1788,6 +2260,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_mtn_latest_image:
+          requires:
+            - check_for_changes_mtn
           context:
             - DOCKER
       - build_and_push_zeebe_ops_tag_image:
@@ -1798,7 +2272,7 @@ workflows:
             - DOCKER
       - build_and_push_zeebe_ops_latest_image:
           requires:
-            - check_for_changes_ams_mifos
+            - check_for_changes_zeebe_ops
           context:
             - DOCKER
       - build_and_push_ams_mifos_tag_image:
@@ -1808,6 +2282,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_ams_mifos_latest_image:
+          requires:
+            - check_for_changes_ams_mifos
           context:
             - DOCKER
       - build_and_push_bill_pay_tag_image:
@@ -1828,6 +2304,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_crm_latest_image:
+          requires:
+            - check_for_changes_crm
           context:
             - DOCKER
       - build_and_push_mojaloop_tag_image:
@@ -1848,6 +2326,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_connector_bulk_latest_image:
+          requires:
+            - check_for_changes_connector
           context:
             - DOCKER
       - build_and_push_gsma_mm_tag_image:
@@ -1857,6 +2337,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_gsma_mm_latest_image:
+          requires:
+            - check_for_changes_gsma_mm
           context:
             - DOCKER
 
