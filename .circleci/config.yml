@@ -712,31 +712,38 @@ jobs:
           command: |
             # Fetch the latest changes
             git fetch origin
-
+  
             # Determine the base branch for the PR
             if [ -z "$CIRCLE_PULL_REQUEST" ]; then
               echo "Not a pull request, skipping check."
-              echo "export BUILD_BILLPAY=false" >> $BASH_ENV
+              echo "export $BUILD_BILLPAY=false" >> $BASH_ENV
             else
               # Extract the PR number from the pull request URL
               PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
-
+  
               # Fetch the base branch for the PR using the GitHub API
               PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
-
+  
               # Ensure we have the latest changes from the base branch
               git fetch origin "$PR_BASE_BRANCH"
-
+  
+              # Switch to the base branch and pull the latest changes
+              git checkout "$PR_BASE_BRANCH"
+              git pull origin "$PR_BASE_BRANCH"
+  
+              # Checkout back to the branch under test
+              git checkout -
+  
               # Find the common ancestor (merge-base) between the base branch and the current branch
               MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
-
+  
               # Check if there are any changes in the ph-ee-bill-pay directory since the common ancestor
               if git diff --quiet $MERGE_BASE HEAD -- ph-ee-bill-pay; then
                 echo "No changes in ph-ee-bill-pay, skipping build."
-                echo "export BUILD_BILLPAY=false" >> $BASH_ENV
+                echo "export $BUILD_BILLPAY=false" >> $BASH_ENV
               else
                 echo "Changes detected in ph-ee-bill-pay, proceeding with build."
-                echo "export BUILD_BILLPAY=true" >> $BASH_ENV
+                echo "export $BUILD_BILLPAY=true" >> $BASH_ENV
               fi
             fi
       - persist_to_workspace:
@@ -1915,7 +1922,7 @@ jobs:
           command: |
             # Fetch the latest changes
             git fetch origin
-
+  
             # Determine the base branch for the PR
             if [ -z "$CIRCLE_PULL_REQUEST" ]; then
               echo "Not a pull request, skipping check."
@@ -1923,16 +1930,23 @@ jobs:
             else
               # Extract the PR number from the pull request URL
               PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
-
+  
               # Fetch the base branch for the PR using the GitHub API
               PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
-
+  
               # Ensure we have the latest changes from the base branch
               git fetch origin "$PR_BASE_BRANCH"
-
+  
+              # Switch to the base branch and pull the latest changes
+              git checkout "$PR_BASE_BRANCH"
+              git pull origin "$PR_BASE_BRANCH"
+  
+              # Checkout back to the branch under test
+              git checkout -
+  
               # Find the common ancestor (merge-base) between the base branch and the current branch
               MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
-
+  
               # Check if there are any changes in the ph-ee-connector-mpesa directory since the common ancestor
               if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-mpesa; then
                 echo "No changes in ph-ee-connector-mpesa, skipping build."
