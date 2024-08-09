@@ -668,7 +668,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in AMS Pesa
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -708,7 +708,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in Bill Pay
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -788,7 +788,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in GMSA MM
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -926,7 +926,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in Connector Bulk
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -1095,7 +1095,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in Mojaloop Connector
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -1197,7 +1197,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in CRM Connector
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -1502,7 +1502,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in Zeebe Ops
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -1638,7 +1638,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in MTN Connector
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -1774,7 +1774,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in Airtel Connector
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -1911,7 +1911,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in MPesa
           command: |
             # Fetch the latest changes
             git fetch origin
@@ -2047,7 +2047,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check for changes in AMS Mifos
+          name: Check for changes in AMS Paygops
           command: |
             # Fetch the latest changes
             git fetch origin
