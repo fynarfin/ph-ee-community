@@ -1584,6 +1584,46 @@ jobs:
             JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
             docker push fynarfin/ph-ee-connector-mpesa:${JIRA_STORY}
             fi
+  check_for_changes_paygops:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Check for changes in AMS Mifos
+          command: |
+            # Fetch the latest changes
+            git fetch origin
+
+            # Determine the base branch for the PR
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              echo "Not a pull request, skipping check."
+              echo "export BUILD_PAYGOPS=false" >> $BASH_ENV
+            else
+              # Extract the PR number from the pull request URL
+              PR_NUMBER=$(basename "$CIRCLE_PULL_REQUEST")
+
+              # Fetch the base branch for the PR using the GitHub API
+              PR_BASE_BRANCH=$(curl -sSL "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .base.ref)
+
+              # Ensure we have the latest changes from the base branch
+              git fetch origin "$PR_BASE_BRANCH"
+
+              # Find the common ancestor (merge-base) between the base branch and the current branch
+              MERGE_BASE=$(git merge-base origin/$PR_BASE_BRANCH HEAD)
+
+              # Check if there are any changes in the ph-ee-connector-ams-paygops directory since the common ancestor
+              if git diff --quiet $MERGE_BASE HEAD -- ph-ee-connector-ams-paygops; then
+                echo "No changes in ph-ee-connector-ams-paygops, skipping build."
+                echo "export BUILD_PAYGOPS=false" >> $BASH_ENV
+              else
+                echo "Changes detected in ph-ee-connector-ams-paygops, proceeding with build."
+                echo "export BUILD_PAYGOPS=true" >> $BASH_ENV
+              fi
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   build_and_push_ams_paygops_tag_image:
     executor: docker-executor
     environment:
@@ -1634,34 +1674,51 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            cd ph-ee-connector-ams-paygops
-            ./gradlew bootJar
-            docker build -t fynarfin/ph-ee-connector-ams-paygops:latest .
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-              PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-              PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-              JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-              if [ -z "$JIRA_STORY" ]; then echo "Invalid PR title" && exit 1; else echo "Ticket NO: $JIRA_STORY"; fi
-              docker image tag fynarfin/ph-ee-connector-ams-paygops:latest fynarfin/ph-ee-connector-ams-paygops:$JIRA_STORY
+            if [ "$BUILD_PAYGOPS" == "true" ]; then
+              cd ph-ee-connector-ams-paygops
+              ./gradlew bootJar
+              docker build -t fynarfin/ph-ee-connector-ams-paygops:latest .
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                if [ -z "$JIRA_STORY" ]; then
+                  echo "Invalid PR title" && exit 1
+                else
+                  echo "Ticket NO: $JIRA_STORY"
+                  docker image tag fynarfin/ph-ee-connector-ams-paygops:latest fynarfin/ph-ee-connector-ams-paygops:$JIRA_STORY
+                fi
+              fi
+            else
+              echo "Skipping build as there are no changes in ph-ee-connector-ams-paygops."
             fi
 
       # Log in to DockerHub using environment variables
       - run:
           name: Login to DockerHub
-          command: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          command: |
+            if [ "$BUILD_PAYGOPS" == "true" ]; then
+              echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            else
+              echo "Skipping DockerHub login as there are no changes in ph-ee-connector-ams-paygops."
+            fi
 
       # Push the Docker image to DockerHub
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$CIRCLE_BRANCH" = "develop" ]; then
-            docker push fynarfin/ph-ee-connector-ams-paygops:latest
-            fi
-            if [ "$CIRCLE_BRANCH" != "develop" ]; then
-            PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
-            PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
-            JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
-            docker push fynarfin/ph-ee-connector-ams-paygops:${JIRA_STORY}
+            if [ "$BUILD_PAYGOPS" == "true" ]; then
+              if [ "$CIRCLE_BRANCH" = "develop" ]; then
+                docker push fynarfin/ph-ee-connector-ams-paygops:latest
+              fi
+              if [ "$CIRCLE_BRANCH" != "develop" ]; then
+                PR_NUMBER=$(basename $CIRCLE_PULL_REQUEST)
+                PR_TITLE=$(curl -sSL "https://api.github.com/repos/fynarfin/$CIRCLE_PR_REPONAME/pulls/$PR_NUMBER" | jq -r '.title')
+                JIRA_STORY=$(echo $PR_TITLE | cut -d "[" -f2 | cut -d "]" -f1 | tr '[A-Z]' '[a-z]')
+                docker push fynarfin/ph-ee-connector-ams-paygops:${JIRA_STORY}
+              fi
+            else
+              echo "Skipping push as there are no changes in ph-ee-connector-ams-paygops."
             fi
   
   
@@ -1685,6 +1742,7 @@ workflows:
       - check_for_changes_bill_pay
       - check_for_changes_ams_mifos
       - check_for_changes_mojaloop
+      - check_for_changes_paygops
       - build_and_push_ams_pesa_tag_image:
           filters:
             tags:
@@ -1710,6 +1768,8 @@ workflows:
           context:
             - DOCKER
       - build_and_push_ams_paygops_latest_image:
+          requires:
+            - check_for_changes_paygops
           context:
             - DOCKER
       - build_and_push_airtel_tag_image:
