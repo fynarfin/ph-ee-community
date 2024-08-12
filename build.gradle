@@ -1,29 +1,26 @@
-allprojects {
-    repositories {
-        mavenLocal()
-        maven {
-            url = uri('https://repo.maven.apache.org/maven2')
-        }
+// Root build.gradle
+plugins {
+    id 'java'
+}
 
+group = 'org.mifos.connector'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
     }
 }
 
+// Include subprojects
 subprojects {
     apply plugin: 'java'
 
-    version = '0.0.1-SNAPSHOT'
-
-    sourceCompatibility = '17'
-
     repositories {
         mavenCentral()
-    }
-
-    dependencies {
-    }
-
-    test {
-        useJUnitPlatform()
+        maven {
+            url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
+        }
     }
 }
-

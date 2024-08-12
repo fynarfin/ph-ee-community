@@ -57,11 +57,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+
 apply plugin:'com.diffplug.spotless'
 spotless {
     format 'misc', {
         target '**/*.md', '**/*.properties', '**/.gitignore', '**/.openapi-generator-ignore', '**/*.yml', '**/*.xml', '**/**.json', '**/*.sql'
-        targetExclude '**/build/**', '**/bin/**', '**/.settings/**', '**/.idea/**', '**/.gradle/**', '**/gradlew.bat', '**/licenses/**', '**/banner.txt', '.vscode/**'
+        targetExclude '**/build/**','**/gsmastub/**', '**/bin/**', '**/.settings/**', '**/.idea/**', '**/.gradle/**', '**/gradlew.bat', '**/licenses/**', '**/banner.txt', '.vscode/**'
         indentWithSpaces(4)
         endWithNewline()
         trimTrailingWhitespace()
@@ -69,7 +70,7 @@ spotless {
 
     groovyGradle {
         target '*.gradle', '**/*.gradle'
-        targetExclude '**/build/**'
+        targetExclude '**/build/**', '**/gsmastub/**'
         greclipse()
         indentWithSpaces(4)
         endWithNewline()
@@ -78,7 +79,6 @@ spotless {
 
     lineEndings 'UNIX'
 }
-
 configure(this) {
     // NOTE: order matters!
     apply plugin: 'java'
@@ -130,10 +130,10 @@ configure(this) {
     // https://github.com/diffplug/spotless/tree/main/plugin-gradle
     spotless {
         java {
-            targetExclude '**/build/**', '**/bin/**', '**/out/**'
+            targetExclude '**/build/**', '**/bin/**', '**/out/**', '**/gsmastub/**'
             importOrder() //sort imports alphabetically
             removeUnusedImports()
-            eclipse().configFile "${rootProject.projectDir}/../config/formatter.xml"
+            eclipse().configFile(rootProject.file('../ph-ee-connector-airtel/config/airtel-formatter.xml'))
             endWithNewline()
             trimTrailingWhitespace()
             // Enforce style modifier order
