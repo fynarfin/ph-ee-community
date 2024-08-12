@@ -621,7 +621,7 @@ jobs:
       - run:
           name: Build Docker image for ph-ee-connector-ams-pesa
           command: |
-            if [ "$BUILD_AMS_PESA" = "true" ]; then
+            if [ "$BUILD_AMS_PESA"="true" ]; then
               cd ph-ee-connector-ams-pesa
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-connector-ams-pesa:latest .
@@ -642,7 +642,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_AMS_PESA" = "true" ]; then
+            if [ "$BUILD_AMS_PESA"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-ams-pesa."
@@ -650,7 +650,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_AMS_PESA" = "true" ]; then
+            if [ "$BUILD_AMS_PESA"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-ams-pesa:latest
               fi
@@ -873,7 +873,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_GSMA" = "true" ]; then
+            if [ "$BUILD_GSMA"="true" ]; then
               cd ph-ee-connector-gsma-mm
               ./gradlew checkstyleMain
               ./gradlew checkstyleTest
@@ -898,7 +898,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_GSMA" = "true" ]; then
+            if [ "$BUILD_GSMA"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-gsma-mm."
@@ -908,7 +908,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_GSMA" = "true" ]; then
+            if [ "$BUILD_GSMA"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-gsma:latest
               fi
@@ -1011,7 +1011,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_CONNECTOR" = "true" ]; then
+            if [ "$BUILD_CONNECTOR"="true" ]; then
               cd ph-ee-connector-bulk
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-connector-bulk:latest .
@@ -1034,7 +1034,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_CONNECTOR" = "true" ]; then
+            if [ "$BUILD_CONNECTOR"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-bulk."
@@ -1044,7 +1044,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_CONNECTOR" = "true" ]; then
+            if [ "$BUILD_CONNECTOR"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-bulk:latest
               fi
@@ -1146,7 +1146,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_MOJALOOP" = "true" ]; then
+            if [ "$BUILD_MOJALOOP"="true" ]; then
               cd ph-ee-connector-mojaloop-java
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-connector-mojaloop:latest .
@@ -1169,7 +1169,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_MOJALOOP" = "true" ]; then
+            if [ "$BUILD_MOJALOOP"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-mojaloop-java."
@@ -1179,7 +1179,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_MOJALOOP" = "true" ]; then
+            if [ "$BUILD_MOJALOOP"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-mojaloop:latest
               fi
@@ -1282,7 +1282,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_CRM" = "true" ]; then
+            if [ "$BUILD_CRM"="true" ]; then
               cd ph-ee-connector-crm
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-connector-crm:latest .
@@ -1305,7 +1305,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_CRM" = "true" ]; then
+            if [ "$BUILD_CRM"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-crm."
@@ -1315,7 +1315,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_CRM" = "true" ]; then
+            if [ "$BUILD_CRM"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-crm:latest
               fi
@@ -1454,7 +1454,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_AMS_MIFOS" = "true" ]; then
+            if [ "$BUILD_AMS_MIFOS"="true" ]; then
               cd ph-ee-connector-ams-mifos
               ./gradlew checkstyleMain
               ./gradlew clean bootJar
@@ -1472,7 +1472,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_AMS_MIFOS" = "true" ]; then
+            if [ "$BUILD_AMS_MIFOS"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-ams-mifos."
@@ -1480,7 +1480,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_AMS_MIFOS" = "true" ]; then
+            if [ "$BUILD_AMS_MIFOS"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-ams-mifos:latest
               fi
@@ -1583,7 +1583,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_ZEEBE_OPS" = "true" ]; then
+            if [ "$BUILD_ZEEBE_OPS"="true" ]; then
               cd ph-ee-zeebe-ops
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-zeebe-ops:latest .
@@ -1606,7 +1606,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_ZEEBE_OPS" = "true" ]; then
+            if [ "$BUILD_ZEEBE_OPS"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-zeebe-ops."
@@ -1616,7 +1616,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_ZEEBE_OPS" = "true" ]; then
+            if [ "$BUILD_ZEEBE_OPS"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-zeebe-ops:latest
               fi
@@ -1719,7 +1719,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_MTN" = "true" ]; then
+            if [ "$BUILD_MTN"="true" ]; then
               cd ph-ee-connector-mtn
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-connector-mtn:latest .
@@ -1742,7 +1742,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_MTN" = "true" ]; then
+            if [ "$BUILD_MTN"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-mtn."
@@ -1752,7 +1752,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_MTN" = "true" ]; then
+            if [ "$BUILD_MTN"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-mtn:latest
               fi
@@ -1855,7 +1855,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_AIRTEL" = "true" ]; then
+            if [ "$BUILD_AIRTEL"="true" ]; then
               cd ph-ee-connector-airtel
               ./gradlew checkstyleMain
               ./gradlew bootJar
@@ -1879,7 +1879,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_AIRTEL" = "true" ]; then
+            if [ "$BUILD_AIRTEL"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-airtel."
@@ -1889,7 +1889,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_AIRTEL" = "true" ]; then
+            if [ "$BUILD_AIRTEL"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-airtel:latest
               fi
@@ -1999,7 +1999,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_MPESA" = "true" ]; then
+            if [ "$BUILD_MPESA"="true" ]; then
               cd ph-ee-connector-mpesa
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-connector-mpesa:latest .
@@ -2022,7 +2022,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_MPESA" = "true" ]; then
+            if [ "$BUILD_MPESA"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-mpesa."
@@ -2032,7 +2032,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_MPESA" = "true" ]; then
+            if [ "$BUILD_MPESA"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-mpesa:latest
               fi
@@ -2135,7 +2135,7 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            if [ "$BUILD_PAYGOPS" = "true" ]; then
+            if [ "$BUILD_PAYGOPS"="true" ]; then
               cd ph-ee-connector-ams-paygops
               ./gradlew bootJar
               docker build -t fynarfin/ph-ee-connector-ams-paygops:latest .
@@ -2158,7 +2158,7 @@ jobs:
       - run:
           name: Login to DockerHub
           command: |
-            if [ "$BUILD_PAYGOPS" = "true" ]; then
+            if [ "$BUILD_PAYGOPS"="true" ]; then
               echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
             else
               echo "Skipping DockerHub login as there are no changes in ph-ee-connector-ams-paygops."
@@ -2168,7 +2168,7 @@ jobs:
       - run:
           name: Push Docker image to DockerHub
           command: |
-            if [ "$BUILD_PAYGOPS" = "true" ]; then
+            if [ "$BUILD_PAYGOPS"="true" ]; then
               if [ "$CIRCLE_BRANCH" = "develop" ]; then
                 docker push fynarfin/ph-ee-connector-ams-paygops:latest
               fi
