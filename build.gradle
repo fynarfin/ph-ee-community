@@ -1,0 +1,26 @@
+// Root build.gradle
+plugins {
+    id 'java'
+}
+
+group = 'org.mifos.connector'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
+    }
+}
+
+// Include subprojects
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+        maven {
+            url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
+        }
+    }
+}
