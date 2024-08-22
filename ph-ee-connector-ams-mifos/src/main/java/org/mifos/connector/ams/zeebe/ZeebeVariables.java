@@ -20,6 +20,7 @@ public final class ZeebeVariables {
     public static final String PARTY_ID = "partyId";
     public static final String PARTY_ID_TYPE = "partyIdType";
     public static final String PAYEE_PARTY_RESPONSE = "payeePartyResponse";
+    public static final String PARTY_VALIDATION = "partyValidation";
     public static final String QUOTE_FAILED = "quoteFailed";
     public static final String QUOTE_SWITCH_REQUEST = "quoteSwitchRequest";
     public static final String QUOTE_SWITCH_REQUEST_AMOUNT = "quoteSwitchRequestAmount";
