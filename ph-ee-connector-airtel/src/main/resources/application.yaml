@@ -1,5 +1,8 @@
 dfspids: "DFSPID"
 
+server:
+  port: 8080
+
 transaction-id-length: -1
 
 timer: "PT45S"
@@ -13,16 +16,45 @@ operations:
 
 bpmn:
   flows:
-    airtel_flow_mifos: "airtel_flow_mifos-{dfspid}"
+    AIRTEL_FLOW_MIFOS: "airtel_flow_mifos-{dfspid}"
 
 ams:
   groups:
-    - identifier: "accountid"
+    - identifier: "account_id"
       value: "fineract"
     - identifier: "default"
       value : "fineract"
 
+airtel:
+  MAX_RETRY_COUNT: 3
+  authorization: ${AIRTEL_AUTHORIZATION:"Bearer UC23y1292w"}
+  signature: ${AIRTEL_SIGNATURE:"MGsp1Hs683Ag=="}
+  key: ${AIRTEL_KEY:"DVZCgY91bS=="}
+  endpoints:
+    contact-point: "http://localhost"
+    airtel-ussd-push: "/merchant/v2/payments/"
+    airtel-transaction-enquiry: "/standard/v1/payments/"
+    call-back: "/callback"
+    send-call-back: "/sendcallback"
+
+mock-airtel:
+  FAILED_RESPONSE_CODE: "DP00800001005"
+  SUCCESS_RESPONSE_CODE: "DP00800001001"
+  PENDING_RESPONSE_CODE: "DP00800001006"
+  MSISDN_SUCCESSFUL: "1835817466"
+  MSISDN_FAILED: "6729461912"
+  CLIENT_CORRELATION_ID_SUCCESSFUL: "123456"
+  CLIENT_CORRELATION_ID_FAILED: "1278320"
+  RESULT_CODE: "ESB000010"
 
 logging:
   level:
     root: INFO
+
+zeebe:
+  client:
+    max-execution-threads: 1000
+    evenly-allocated-max-jobs: 1000
+    poll-interval: 1
+  broker:
+    contactpoint: "localhost:26500"
