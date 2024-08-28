@@ -18,6 +18,8 @@ public interface AmsService {
 
     void repayLoan(Exchange e);
 
+    String disburseLoan(String fineractTenantId, String originDate,String channelRequest);
+
     void login(Exchange e);
 
     void getSavingsAccount(Exchange e);
