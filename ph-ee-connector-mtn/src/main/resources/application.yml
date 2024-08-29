@@ -1,0 +1,22 @@
+zeebe:
+  client:
+    max-execution-threads: 50
+    evenly-allocated-max-jobs: 1000
+    poll-interval: 10
+    ttl: 30000
+  #    number-of-workers: 15
+  #    evenly-allocated-max-jobs: "#{${zeebe.client.max-execution-threads} / ${zeebe.client.number-of-workers}}"
+  broker:
+    contactpoint: "localhost:26500"
+
+payerIdentifier:
+  reject: 46733123451
+  callback:
+    delay: 46733123454
+    failure: 46733123450
+
+mock-payment-schema:
+  contactpoint: "http://localhost:8082"
+  endpoints:
+    mtn-collection: "/mtn/collection"
+    request-to-pay: "/v1_0/requesttopay"
