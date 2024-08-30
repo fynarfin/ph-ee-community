@@ -16,7 +16,7 @@ payerIdentifier:
     failure: 46733123450
 
 mock-payment-schema:
-  contactpoint: "http://localhost:8082"
+  contactpoint: "http://ph-ee-connector-mock-payment-schema:8080"
   endpoints:
     mtn-collection: "/mtn/collection"
     request-to-pay: "/v1_0/requesttopay"
