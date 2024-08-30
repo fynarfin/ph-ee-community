@@ -2,7 +2,6 @@ package org.mifos.connector.ams.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.http.HttpHeaders;
@@ -25,10 +24,8 @@ public class RestTemplateUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(RestTemplateUtil.class);
 
-    @Value("${ams.local.keystore-path}")
-    private String keystorePath;
+    private String keystorePath = "keystore.jks";
 
-    //    @Value("${ams.local.keystore-password}")
     private String keystorePassword = "openmf";
 
     private RestTemplate restTemplate;
@@ -40,9 +37,7 @@ public class RestTemplateUtil {
     private RestTemplate createCustomRestTemplate() {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            logger.info("keystore path is "+ keystorePath);
-            logger.info("keystore password is "+keystorePassword);
-            keyStore.load(new FileInputStream(new File("keystore.jks")), keystorePassword.toCharArray());
+            keyStore.load(new FileInputStream(new File(keystorePath)), keystorePassword.toCharArray());
 
             SSLContext sslContext = SSLContextBuilder
                     .create()
@@ -66,4 +61,3 @@ public class RestTemplateUtil {
         return restTemplate.exchange(url, method, new HttpEntity<>(body, headers), String.class);
     }
 }
-

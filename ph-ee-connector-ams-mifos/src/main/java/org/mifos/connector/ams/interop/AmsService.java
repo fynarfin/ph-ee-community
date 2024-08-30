@@ -1,6 +1,7 @@
 package org.mifos.connector.ams.interop;
 
 import org.apache.camel.Exchange;
+import org.mifos.connector.ams.utils.LoanDisbursementRequestDto;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,7 +19,7 @@ public interface AmsService {
 
     void repayLoan(Exchange e);
 
-    String disburseLoan(String fineractTenantId, String originDate,String channelRequest);
+    String disburseLoan(String fineractTenantId, LoanDisbursementRequestDto loanDisbursementRequestDto, String channelRequest, String basicAuthHeader);
 
     void login(Exchange e);
 

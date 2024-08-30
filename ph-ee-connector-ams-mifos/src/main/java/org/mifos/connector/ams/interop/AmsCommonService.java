@@ -145,16 +145,12 @@ public class AmsCommonService {
         // cxfrsUtil.sendInOut("cxfrs:bean:ams.local.loan", e, headers, e.getIn().getBody());
     }
 
-    public String disburseLoan(String fineractTenantId, String originDate,String channelRequest){
+    public String disburseLoan(String fineractTenantId, LoanDisbursementRequestDto loanDisbursementRequestDto,String channelRequest,String basicAuthHeader){
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("fineract-platform-tenantid", fineractTenantId);
-        headers.add("Authorization",getBasicAuthHeader("mifos", "password"));
-        LoanDisbursementRequestDto loanDisbursementRequestDto = new LoanDisbursementRequestDto();
+        headers.add("Authorization", basicAuthHeader);
         ObjectMapper objectMapper = new ObjectMapper();
-        loanDisbursementRequestDto.setActualDisbursementDate("26 August 2024");
-        loanDisbursementRequestDto.setDateFormat("dd MMMM yyyy");
-        loanDisbursementRequestDto.setLocale("en");
         String requestBody;
         TransactionChannelRequestDTO channelRequestDTO;
         try{
@@ -168,9 +164,6 @@ public class AmsCommonService {
         String url =amsInteropHostPath+amsInteropDisbursalTransactionPath.replace("{accountId}",accountId);
         try {
             RestTemplateUtil restTemplateUtil = new RestTemplateUtil();
-            logger.info("request body is here"+requestBody.toString());
-            logger.info("url is here"+url);
-            logger.info("headers are here "+headers.toString());
             ResponseEntity<String> exchange = restTemplateUtil.exchange(url, HttpMethod.POST, headers, requestBody);
             logger.info(exchange.toString());
             logger.info("Response: {} status: {}", exchange.getBody().toString(), exchange.getStatusCode());

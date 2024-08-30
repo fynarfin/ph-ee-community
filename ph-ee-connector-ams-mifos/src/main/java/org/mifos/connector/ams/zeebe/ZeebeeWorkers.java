@@ -49,6 +49,8 @@ import org.apache.camel.support.DefaultExchange;
 import org.json.JSONObject;
 import org.mifos.connector.ams.interop.AmsService;
 import org.mifos.connector.ams.properties.TenantProperties;
+import org.mifos.connector.ams.utils.LoanDisbursementRequestDto;
+import org.mifos.connector.ams.utils.LoanDisbursementRequestDtoHelper;
 import org.mifos.connector.common.ams.dto.QuoteFspResponseDTO;
 import org.mifos.connector.common.channel.dto.TransactionChannelRequestDTO;
 import org.mifos.connector.common.gsma.dto.GsmaTransfer;
@@ -200,7 +202,10 @@ public class ZeebeeWorkers {
                     String fineractTenantId = variables.get("tenantId").toString();
                     String originDate = variables.get("originDate").toString();
                     String channelRequest = variables.get("channelRequest").toString();
-                    String response = amsService.disburseLoan(fineractTenantId,originDate,channelRequest);
+                    LoanDisbursementRequestDtoHelper loanDisbursementRequestDtoHelper = new LoanDisbursementRequestDtoHelper();
+                    LoanDisbursementRequestDto loanDisbursementRequestDto = loanDisbursementRequestDtoHelper.createLoanDisbursementRequestDto(originDate);
+                    String basicAuthHeader  = loanDisbursementRequestDtoHelper.getBasicAuthHeader("mifos","password");
+                    String response = amsService.disburseLoan(fineractTenantId,loanDisbursementRequestDto,channelRequest,basicAuthHeader);
                     if(response!=null){
                         variables.put("transferCreateFailed", false);
                     }else{
