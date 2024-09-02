@@ -174,11 +174,6 @@ public class AmsCommonService {
         }
     }
 
-    private String getBasicAuthHeader(String username, String password) {
-        String credentials = username + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-    }
-
     public boolean sendCallback(String callbackURL, String body) {
         logger.info("Sending Callback...");
         ResponseEntity responseEntity;
