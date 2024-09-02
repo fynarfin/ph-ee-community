@@ -9,12 +9,11 @@ import static org.mifos.connector.ams.zeebe.ZeebeVariables.PARTY_ID;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.PARTY_ID_TYPE;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.TENANT_ID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 import org.mifos.connector.ams.camel.cxfrs.CxfrsUtil;
@@ -145,7 +144,8 @@ public class AmsCommonService {
         // cxfrsUtil.sendInOut("cxfrs:bean:ams.local.loan", e, headers, e.getIn().getBody());
     }
 
-    public String disburseLoan(String fineractTenantId, LoanDisbursementRequestDto loanDisbursementRequestDto,String channelRequest,String basicAuthHeader){
+    public String disburseLoan(String fineractTenantId, LoanDisbursementRequestDto loanDisbursementRequestDto, String channelRequest,
+            String basicAuthHeader) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         headers.add("fineract-platform-tenantid", fineractTenantId);
@@ -153,15 +153,15 @@ public class AmsCommonService {
         ObjectMapper objectMapper = new ObjectMapper();
         String requestBody;
         TransactionChannelRequestDTO channelRequestDTO;
-        try{
+        try {
             requestBody = objectMapper.writeValueAsString(loanDisbursementRequestDto);
-            channelRequestDTO = objectMapper.readValue(channelRequest,TransactionChannelRequestDTO.class);
-        }catch (Exception ex){
+            channelRequestDTO = objectMapper.readValue(channelRequest, TransactionChannelRequestDTO.class);
+        } catch (Exception ex) {
             logger.info(ex.getMessage());
             return null;
         }
         String accountId = channelRequestDTO.getPayer().getPartyIdInfo().getPartyIdentifier();
-        String url =amsInteropHostPath+amsInteropDisbursalTransactionPath.replace("{accountId}",accountId);
+        String url = amsInteropHostPath + amsInteropDisbursalTransactionPath.replace("{accountId}", accountId);
         try {
             RestTemplateUtil restTemplateUtil = new RestTemplateUtil();
             ResponseEntity<String> exchange = restTemplateUtil.exchange(url, HttpMethod.POST, headers, requestBody);
@@ -169,10 +169,7 @@ public class AmsCommonService {
             logger.info("Response: {} status: {}", exchange.getBody().toString(), exchange.getStatusCode());
             return exchange.getBody();
         } catch (Exception ex) {
-            logger.error("exception", ex);
-            String errorMessage = ex.getMessage();
-            logger.info(errorMessage);
-            System.out.println(errorMessage);
+            logger.error(ex.getMessage());
             return null;
         }
     }

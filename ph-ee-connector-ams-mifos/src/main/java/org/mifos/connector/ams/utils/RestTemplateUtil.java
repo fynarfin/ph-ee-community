@@ -1,23 +1,23 @@
 package org.mifos.connector.ams.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import javax.net.ssl.SSLContext;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-import javax.net.ssl.SSLContext;
-import java.io.FileInputStream;
-import java.io.File;
-import java.security.KeyStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class RestTemplateUtil {
@@ -39,15 +39,10 @@ public class RestTemplateUtil {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(new FileInputStream(new File(keystorePath)), keystorePassword.toCharArray());
 
-            SSLContext sslContext = SSLContextBuilder
-                    .create()
-                    .loadTrustMaterial(keyStore, new TrustSelfSignedStrategy())
-                    .build();
+            SSLContext sslContext = SSLContextBuilder.create().loadTrustMaterial(keyStore, new TrustSelfSignedStrategy()).build();
 
-            CloseableHttpClient httpClient = HttpClients.custom()
-                    .setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-                    .build();
+            CloseableHttpClient httpClient = HttpClients.custom().setSSLContext(sslContext)
+                    .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
             HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
             return new RestTemplate(factory);

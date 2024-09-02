@@ -136,7 +136,7 @@ configure(this) {
             targetExclude '**/build/**', '**/bin/**', '**/out/**'
             importOrder() //sort imports alphabetically
             removeUnusedImports()
-            eclipse().configFile(rootProject.file('ph-ee-connector-ams-mifos/config/ams-formatter.xml'))
+            eclipse().configFile(rootProject.file('config/ams-formatter.xml'))
             endWithNewline()
             trimTrailingWhitespace()
             // Enforce style modifier order

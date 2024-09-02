@@ -194,24 +194,26 @@ public class ZeebeeWorkers {
                 }
             }).name("release-block").maxJobsActive(workerMaxJobs).open();
 
-            zeebeClient.newWorker().jobType("credit-loan-account").handler((client,job) -> {
+            zeebeClient.newWorker().jobType("credit-loan-account").handler((client, job) -> {
                 logWorkerDetails(job);
-                if(isAmsLocalEnabled) {
+                if (isAmsLocalEnabled) {
                     Map<String, Object> variables = job.getVariablesAsMap();
                     logger.info(variables.toString());
                     String fineractTenantId = variables.get("tenantId").toString();
                     String originDate = variables.get("originDate").toString();
                     String channelRequest = variables.get("channelRequest").toString();
                     LoanDisbursementRequestDtoHelper loanDisbursementRequestDtoHelper = new LoanDisbursementRequestDtoHelper();
-                    LoanDisbursementRequestDto loanDisbursementRequestDto = loanDisbursementRequestDtoHelper.createLoanDisbursementRequestDto(originDate);
-                    String basicAuthHeader  = loanDisbursementRequestDtoHelper.getBasicAuthHeader("mifos","password");
-                    String response = amsService.disburseLoan(fineractTenantId,loanDisbursementRequestDto,channelRequest,basicAuthHeader);
-                    if(response!=null){
+                    LoanDisbursementRequestDto loanDisbursementRequestDto = loanDisbursementRequestDtoHelper
+                            .createLoanDisbursementRequestDto(originDate);
+                    String basicAuthHeader = loanDisbursementRequestDtoHelper.getBasicAuthHeader("mifos", "password");
+                    String response = amsService.disburseLoan(fineractTenantId, loanDisbursementRequestDto, channelRequest,
+                            basicAuthHeader);
+                    if (response != null) {
                         variables.put("transferCreateFailed", false);
-                    }else{
+                    } else {
                         variables.put("transferCreateFailed", true);
                     }
-                    variables.put("disbursal response",response);
+                    variables.put("disbursal response", response);
                     zeebeClient.newCompleteCommand(job.getKey()).variables(variables).send();
                 } else {
                     logger.info("local ams is not enabled");

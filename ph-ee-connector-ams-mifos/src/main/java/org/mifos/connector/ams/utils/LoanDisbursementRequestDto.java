@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoanDisbursementRequestDto {
+
     String actualDisbursementDate;
     String dateFormat;
     String locale;

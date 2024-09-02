@@ -19,7 +19,8 @@ public interface AmsService {
 
     void repayLoan(Exchange e);
 
-    String disburseLoan(String fineractTenantId, LoanDisbursementRequestDto loanDisbursementRequestDto, String channelRequest, String basicAuthHeader);
+    String disburseLoan(String fineractTenantId, LoanDisbursementRequestDto loanDisbursementRequestDto, String channelRequest,
+            String basicAuthHeader);
 
     void login(Exchange e);
 

@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class LoanDisbursementRequestDtoHelper {
 
-    public LoanDisbursementRequestDto createLoanDisbursementRequestDto(String originDate){
+    public LoanDisbursementRequestDto createLoanDisbursementRequestDto(String originDate) {
         Long timestamp = Long.parseLong(originDate);
         Date date = new Date(timestamp);
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
