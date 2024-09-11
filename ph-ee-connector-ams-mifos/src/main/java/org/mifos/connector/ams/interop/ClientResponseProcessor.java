@@ -3,6 +3,7 @@ package org.mifos.connector.ams.interop;
 import static org.mifos.connector.ams.camel.config.CamelProperties.ZEEBE_JOB_KEY;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.PARTY_ID;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.PARTY_ID_TYPE;
+import static org.mifos.connector.ams.zeebe.ZeebeVariables.PARTY_VALIDATION;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.PAYEE_PARTY_RESPONSE;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.TENANT_ID;
 import static org.mifos.connector.common.ams.dto.LegalForm.PERSON;
@@ -52,6 +53,8 @@ public class ClientResponseProcessor implements Processor {
     @Autowired
     private ErrorTranslator errorTranslator;
 
+    Boolean partyValidation;
+
     @Override
     public void process(Exchange exchange) throws Exception {
         Integer responseCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
@@ -59,11 +62,16 @@ public class ClientResponseProcessor implements Processor {
         String partyId = exchange.getProperty(PARTY_ID, String.class);
 
         if (responseCode > 202) {
-
+            partyValidation = false;
             Map<String, Object> variables = Utils.getDefaultZeebeErrorVariable(exchange, errorTranslator);
             logger.info("Setting error info: {}", variables);
+            variables.put(PARTY_VALIDATION, partyValidation);
             zeebeClient.newCompleteCommand(exchange.getProperty(ZEEBE_JOB_KEY, Long.class)).variables(variables).send();
         } else {
+            partyValidation = false;
+            if (responseCode == 200) {
+                partyValidation = true;
+            }
             Party mojaloopParty = new Party(new PartyIdInfo(IdentifierType.valueOf(partyIdType), partyId, null,
                     tenantProperties.getTenant(exchange.getProperty(TENANT_ID, String.class)).getFspId()), null, null, null);
 
@@ -103,6 +111,7 @@ public class ClientResponseProcessor implements Processor {
 
             Map<String, Object> variables = new HashMap<>();
             variables.put(PAYEE_PARTY_RESPONSE, objectMapper.writeValueAsString(mojaloopParty));
+            variables.put(PARTY_VALIDATION, partyValidation);
             zeebeClient.newCompleteCommand(exchange.getProperty(ZEEBE_JOB_KEY, Long.class)).variables(variables).send();
         }
     }

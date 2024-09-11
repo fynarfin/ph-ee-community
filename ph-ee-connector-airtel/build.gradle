@@ -37,10 +37,11 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation 'org.mifos:ph-ee-connector-common:1.9.1-SNAPSHOT'
+    implementation 'org.mifos:ph-ee-connector-common:0.0.0'
     implementation 'org.json:json:20210307'
     checkstyle 'com.puppycrawl.tools:checkstyle:10.9.3'
     checkstyle 'com.github.sevntu-checkstyle:sevntu-checks:1.44.1'
+    implementation 'io.camunda:zeebe-client-java:8.1.1'
     implementation 'com.diffplug.gradle.spotless:spotless:2.4.1'
     implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.17.0'
     implementation "org.springframework.boot:spring-boot-starter:$springBootVersion"
