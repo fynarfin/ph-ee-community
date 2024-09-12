@@ -9,6 +9,7 @@ import static org.mifos.connector.ams.zeebe.ZeebeVariables.PARTY_ID;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.PARTY_ID_TYPE;
 import static org.mifos.connector.ams.zeebe.ZeebeVariables.TENANT_ID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,10 +17,15 @@ import org.apache.camel.Exchange;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 import org.mifos.connector.ams.camel.cxfrs.CxfrsUtil;
 import org.mifos.connector.ams.tenant.TenantService;
+import org.mifos.connector.ams.utils.LoanDisbursementRequestDto;
+import org.mifos.connector.ams.utils.RestTemplateUtil;
+import org.mifos.connector.common.channel.dto.TransactionChannelRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +33,9 @@ import org.springframework.web.client.RestTemplate;
 @Component
 // @ConditionalOnExpression("${ams.local.enabled}")
 public class AmsCommonService {
+
+    @Value("${ams.local.interop.host}")
+    private String amsInteropHostPath;
 
     @Value("${ams.local.interop.quotes-path}")
     private String amsInteropQuotesPath;
@@ -39,6 +48,9 @@ public class AmsCommonService {
 
     @Value("${ams.local.loan.repayment-path}")
     private String amsLoanRepaymentPath;
+
+    @Value("${ams.local.interop.disbursal-transaction-path}")
+    private String amsInteropDisbursalTransactionPath;
 
     @Autowired
     private TenantService tenantService;
@@ -57,6 +69,8 @@ public class AmsCommonService {
     private String mockServiceInteropTransfersPath;
     @Value("${mock-service.local.interop.parties-path}")
     private String mockServiceAmsInteropPartiesPath;
+    @Value("${mock-service.local.loan.disbursal-transaction-path}")
+    private String mockServiceDisbursalTransactionPath;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -127,6 +141,36 @@ public class AmsCommonService {
             cxfrsUtil.sendInOut("cxfrs:bean:mock-service.local.loan", e, headers, e.getIn().getBody().toString());
         }
         // cxfrsUtil.sendInOut("cxfrs:bean:ams.local.loan", e, headers, e.getIn().getBody());
+    }
+
+    public String disburseLoan(String fineractTenantId, LoanDisbursementRequestDto loanDisbursementRequestDto, String channelRequest,
+            String basicAuthHeader) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        headers.add("fineract-platform-tenantid", fineractTenantId);
+        headers.add("Authorization", basicAuthHeader);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody;
+        TransactionChannelRequestDTO channelRequestDTO;
+        try {
+            requestBody = objectMapper.writeValueAsString(loanDisbursementRequestDto);
+            channelRequestDTO = objectMapper.readValue(channelRequest, TransactionChannelRequestDTO.class);
+        } catch (Exception ex) {
+            logger.info(ex.getMessage());
+            return null;
+        }
+        String accountId = channelRequestDTO.getPayer().getPartyIdInfo().getPartyIdentifier();
+        String url = amsInteropHostPath + amsInteropDisbursalTransactionPath.replace("{accountId}", accountId);
+        try {
+            RestTemplateUtil restTemplateUtil = new RestTemplateUtil();
+            ResponseEntity<String> exchange = restTemplateUtil.exchange(url, HttpMethod.POST, headers, requestBody);
+            logger.info(exchange.toString());
+            logger.info("Response: {} status: {}", exchange.getBody().toString(), exchange.getStatusCode());
+            return exchange.getBody();
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
+            return null;
+        }
     }
 
     public boolean sendCallback(String callbackURL, String body) {

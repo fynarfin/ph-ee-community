@@ -25,6 +25,7 @@ ams:
       parties-path: ${ams.local.interop.base-url}/interoperation/parties/{idType}/{idValue}
       transfers-path: ${ams.local.interop.base-url}/interoperation/transfers
       accounts-path: ${ams.local.interop.base-url}/interoperation/accounts/{externalAccountId}
+      disbursal-transaction-path: ${ams.local.interop.base-url}/interoperation/transactions/{accountId}/disburse
     customer:
       host: https://localhost:8443
       base-url: /fineract-provider/api/v1
@@ -46,6 +47,7 @@ mock-service:
       host: http://localhost:7070
       base-url: /fineract
       repayment-path: ${mock-service.local.loan.base-url}/transactions/loanrepayment
+      disbursal-transaction-path: ${mock-service.local.loan.base-url}/transactions/disburseloan
     interop:
       host: http://localhost:7070
       base-url: /fineract

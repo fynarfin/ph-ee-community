@@ -47,7 +47,10 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.support.DefaultExchange;
 import org.json.JSONObject;
+import org.mifos.connector.ams.interop.AmsService;
 import org.mifos.connector.ams.properties.TenantProperties;
+import org.mifos.connector.ams.utils.LoanDisbursementRequestDto;
+import org.mifos.connector.ams.utils.LoanDisbursementRequestDtoHelper;
 import org.mifos.connector.common.ams.dto.QuoteFspResponseDTO;
 import org.mifos.connector.common.channel.dto.TransactionChannelRequestDTO;
 import org.mifos.connector.common.gsma.dto.GsmaTransfer;
@@ -94,6 +97,9 @@ public class ZeebeeWorkers {
 
     @Autowired
     private ZeebeUtil zeebeUtil;
+
+    @Autowired
+    private AmsService amsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -187,6 +193,35 @@ public class ZeebeeWorkers {
                     zeebeClient.newCompleteCommand(job.getKey()).variables(variables).send();
                 }
             }).name("release-block").maxJobsActive(workerMaxJobs).open();
+
+            zeebeClient.newWorker().jobType("credit-loan-account").handler((client, job) -> {
+                logWorkerDetails(job);
+                if (isAmsLocalEnabled) {
+                    Map<String, Object> variables = job.getVariablesAsMap();
+                    logger.info(variables.toString());
+                    String fineractTenantId = variables.get("tenantId").toString();
+                    String originDate = variables.get("originDate").toString();
+                    String channelRequest = variables.get("channelRequest").toString();
+                    LoanDisbursementRequestDtoHelper loanDisbursementRequestDtoHelper = new LoanDisbursementRequestDtoHelper();
+                    LoanDisbursementRequestDto loanDisbursementRequestDto = loanDisbursementRequestDtoHelper
+                            .createLoanDisbursementRequestDto(originDate);
+                    String basicAuthHeader = loanDisbursementRequestDtoHelper.getBasicAuthHeader("mifos", "password");
+                    String response = amsService.disburseLoan(fineractTenantId, loanDisbursementRequestDto, channelRequest,
+                            basicAuthHeader);
+                    if (response != null) {
+                        variables.put("transferCreateFailed", false);
+                    } else {
+                        variables.put("transferCreateFailed", true);
+                    }
+                    variables.put("disbursal response", response);
+                    zeebeClient.newCompleteCommand(job.getKey()).variables(variables).send();
+                } else {
+                    logger.info("local ams is not enabled");
+                    Map<String, Object> variables = new HashMap<>();
+                    variables.put("transferCreateFailed", false);
+                    zeebeClient.newCompleteCommand(job.getKey()).variables(variables).send();
+                }
+            }).name("credit-loan-account").maxJobsActive(workerMaxJobs).open();
 
             for (String dfspid : dfspids) {
                 logger.info("DFSPID {}", dfspid);
